@@ -5,12 +5,15 @@
  
 
 #!/usr/bin/env python
-from ROOT import *
+# from ROOT import *
+from ROOT import TH1, TFile, kBlack, TH1F
 import math 
 TH1.GetDefaultSumw2()
 
-filename="MinBias_GMTIso" 
-myfilepath='/nfs/cms/cepeda/trigger/'
+# filename="MinBias_GMTIso" 
+# myfilepath='/nfs/cms/cepeda/trigger/'
+filename = "MB_GMTIso_ID"
+myfilepath='data/trigger/'
 
 f = TFile( myfilepath+filename+'.root')
 #tree = f.Get("l1PhaseIITree/L1PhaseIITree") # this is the menu tree
