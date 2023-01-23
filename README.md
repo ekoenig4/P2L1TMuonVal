@@ -6,7 +6,7 @@ Existing ntuples: /eos/user/c/cepeda/trigger/ (DoubleMuGun for signal and MinBia
 
 # Installing
 
-Code runs in [CMSSW_12_5_2_patch1]
+Code runs in [CMSSW_12_5_2_patch1](https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideL1TPhase2Instructions#CMSSW_12_5_2_patch1)
 ```
 cmsrel CMSSW_12_5_2_patch1
 cd CMSSW_12_5_2_patch1/src
