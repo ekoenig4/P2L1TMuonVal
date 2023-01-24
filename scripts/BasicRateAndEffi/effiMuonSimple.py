@@ -13,7 +13,7 @@ from ROOT import TH1, TFile, kBlack, TH1F, TH2F, TVector2, kRed
 import math
 
 filename = "DoubleMu_GMTIso_ID"
-myfilepath='data/trigger/'
+myfilepath = '/eos/user/c/cepeda/trigger/'
 
 f = TFile(myfilepath+filename+'.root')
 tree = f.Get("gmtTkMuonChecksTree/L1PhaseIITree")

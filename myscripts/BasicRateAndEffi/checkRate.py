@@ -12,7 +12,7 @@ from tqdm import tqdm
 import math 
 
 filename = "MB_GMTIso_ID"
-myfilepath='/uscms_data/d3/ekoenig/Trigger/Phase2/CMSSW_12_5_2_patch1/src/L1Trigger/P2L1TMuonVal/data/trigger/'
+myfilepath='/eos/user/c/cepeda/trigger/'
 
 # %%
 # f = ut.open(filename + myfilepath + '.root')
