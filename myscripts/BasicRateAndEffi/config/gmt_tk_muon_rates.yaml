@@ -1,0 +1,36 @@
+
+argparse:
+    # To normalize to total rate at 200:
+    # 2760.0*11246/1000 = 31038
+    totalrate: 31038.0
+    ID: "gmtTkMuonIso[]>=8"
+    IDLabel: "EXAMPLE_HWISOMR"
+
+    file: "MB_GMTIso_ID"
+    filepath: "/eos/user/c/cepeda/trigger/"
+
+outfile: "my_rate_{file}_{IDLabel}.root"
+
+formatHisto:
+    bins: 50
+    start: 0
+    end: 100
+    color: kBlack
+
+rates:
+    # Full Selection String: count the muons passing the cuts. Barrel only!
+    rateGMTTkMuonBarrel:
+        title: "Rate GMTTkMuon Barrel;GMT Track Muon Pt;Rate"
+        onlinecut: ["gmtTkMuonPt[]>{step}", "gmtTkMuonBx[]==0", "abs(gmtTkMuonEta[])<0.83", "{ID}"]
+
+    rateGMTTkMuonOverlap:
+        title: "Rate GMTTkMuon Overlap;GMT Track Muon Pt;Rate"
+        onlinecut: ["gmtTkMuonPt[]>{step}", "gmtTkMuonBx[]==0", "abs(gmtTkMuonEta[])>0.83", "abs(gmtTkMuonEta[])<1.24", "{ID}"]
+
+    rateGMTTkMuonEndcap:
+        title: "Rate GMTTkMuon Endcap;GMT Track Muon Pt;Rate"
+        onlinecut: ["gmtTkMuonPt[]>{step}", "gmtTkMuonBx[]==0", "abs(gmtTkMuonEta[])>1.24", "{ID}"]
+
+    rateGMTTkMuonAll:
+        title: "Rate GMTTkMuon All;GMT Track Muon Pt;Rate"
+        onlinecut: ["gmtTkMuonPt[]>{step}", "gmtTkMuonBx[]==0", "{ID}"]

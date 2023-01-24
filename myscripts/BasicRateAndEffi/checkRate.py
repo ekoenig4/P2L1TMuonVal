@@ -1,26 +1,31 @@
-# %%
-#!/usr/bin/env python3
 ###############################################################
-# Script to compute rates like the menu team did in 2022 
+# Script to compute rates like the menu team did in 2022
 # Directly over the tree: tree.GetEntries( SELECTION STRING )
 ###############################################################
 
-import uproot as ut
-import numpy as np
-import awkward as ak
-from tqdm import tqdm
-import math 
 
-filename = "MB_GMTIso_ID"
-myfilepath='/eos/user/c/cepeda/trigger/'
+#!/usr/bin/env python
+from ROOT import *
+import math, sys, git, os
+TH1.GetDefaultSumw2()
 
-# %%
-# f = ut.open(filename + myfilepath + '.root')
-tree = ut.lazy(f'{myfilepath}{filename}.root:gmtTkMuonChecksTree/L1PhaseIITree')
-entries = len(tree)
+sys.path.append( git.Repo('.', search_parent_directories=True).working_tree_dir )
+from myscripts.phase2_utils.yaml_cfg import Config
 
-# %%
-totalrate=31038.0 
+
+cfg = Config(f'{os.path.dirname(__file__)}/config/gmt_tk_muon_rates.yaml')
+cfg.parse_args()
+
+# filename="MinBias_GMTIso"
+# myfilepath='/nfs/cms/cepeda/trigger/'
+# filename = "MB_GMTIso_ID"
+# myfilepath = '/eos/user/c/cepeda/trigger/'
+
+f = TFile(f'{cfg.filepath}/{cfg.file}.root')
+# tree = f.Get("l1PhaseIITree/L1PhaseIITree") # this is the menu tree
+tree = f.Get("gmtTkMuonChecksTree/L1PhaseIITree")  # this is the menu tree
+entries = tree.GetEntriesFast()
+
 # To normalize to total rate at 200:
 # 2760.0*11246/1000 = 31038
 
@@ -28,114 +33,43 @@ totalrate=31038.0
 # (ID="" for no special selection)
 
 # Example: Medium Hw Isolation:
-ID="&& gmtTkMuonIso[]>=8"
-IDLabel="EXAMPLE_HWISOMR"
 
-eventNo=0
+eventNo = 0
 
-# %%
-# Loop over thresholds 
-step=(100.-0)/50 # step size
-print ('Printing rates!')
-print ('====================') 
-print ('Bin  Threshold  Rate')
-
-# %%
-from ROOT import TH1F, kBlack
-
-class RateProducer:
-    def __init__(self, **kwargs):
-        self.rates = []
-        self.__dict__.update(**kwargs)
-    
-    def produce(self, i):
-        raise NotImplementedError('you should implement this')
-
-    def formatHisto(self, name,title,bins=50,start=0,end=100, color=kBlack):
-        histo = TH1F(name,title,bins,start,end)
-        histo.SetLineColor(color)
-        histo.SetMarkerColor(color)
-        histo.SetMarkerStyle(20)
-        histo.Sumw2()
-
-        for i, rate in enumerate(self.rates):
-            histo.SetBinContent(i, rate)
-        self.histo = histo
+# Format for the rate histograms:
+def formatHisto(name, title, bins=cfg.formatHisto['bins'], start=cfg.formatHisto['start'], end=cfg.formatHisto['end'], color=cfg.formatHisto['color']):
+    histo = TH1F(name, title, bins, start, end)
+    histo.SetLineColor(globals()[color])
+    histo.SetMarkerColor(globals()[color])
+    histo.SetMarkerStyle(20)
+    histo.Sumw2()
+    return histo
 
 
-# %%
-class RateGMTTkMuonBarrel(RateProducer):
-    def produce(self, i):
-        onlinecut = ak.sum((tree["gmtTkMuonPt"] > i*step) \
-                        & (tree["gmtTkMuonBx"] == 0) \
-                        & (np.abs(tree["gmtTkMuonEta"])<0.83) \
-                        & (tree["gmtTkMuonIso"]>=8), axis=-1)>0
-        checkRate = ak.sum(onlinecut)*totalrate/entries
-        self.rates.append(checkRate)
-rateGMTTkMuonBarrel = RateGMTTkMuonBarrel()
+for rate, info in cfg.rates.items():
+    info['histo'] = formatHisto(rate, info['title'])
 
-# %%
-class RateGMTTkMuonEndcap(RateProducer):
-    def produce(self, i):
-        onlinecut = ak.sum((tree["gmtTkMuonPt"] > i*step) \
-                        & (tree["gmtTkMuonBx"] == 0) \
-                        & (np.abs(tree["gmtTkMuonEta"])>0.83) \
-                        & (np.abs(tree["gmtTkMuonEta"])<1.24) \
-                        & (tree["gmtTkMuonIso"]>=8), axis=-1)>0
-        checkRate = ak.sum(onlinecut)*totalrate/entries
-        self.rates.append(checkRate)
-rateGMTTkMuonEndcap = RateGMTTkMuonEndcap()
+# Loop over thresholds
+step = (cfg.formatHisto['end']-cfg.formatHisto['start'])/cfg.formatHisto['bins']  # step size
+print('Printing rates!')
+print('====================')
+print('Bin  Threshold  Rate')
 
-# %%
-class RateGMTTkMuonOverlap(RateProducer):
-    def produce(self, i):
-        onlinecut = ak.sum((tree["gmtTkMuonPt"] > i*step) \
-                        & (tree["gmtTkMuonBx"] == 0) \
-                        & (np.abs(tree["gmtTkMuonEta"])>1.24) \
-                        & (tree["gmtTkMuonIso"]>=8), axis=-1)>0
-        checkRate = ak.sum(onlinecut)*totalrate/entries
-        self.rates.append(checkRate)
-rateGMTTkMuonOverlap = RateGMTTkMuonOverlap()
+for i in range(0, 40):
 
-# %%
-class RateGMTTkMuonAll(RateProducer):
-    def produce(self, i):
-        onlinecut = ak.sum((tree["gmtTkMuonPt"] > i*step) \
-                        & (tree["gmtTkMuonBx"] == 0) \
-                        & (tree["gmtTkMuonIso"]>=8), axis=-1)>0
-        checkRate = ak.sum(onlinecut)*totalrate/entries
-        self.rates.append(checkRate)
-rateGMTTkMuonAll = RateGMTTkMuonAll()
+    for rate, info in cfg.rates.items():
+        onlinecut = f"Sum$( {' && '.join(info['onlinecut'])} )>0"
+        onlinecut = onlinecut.format(step=i*step, ID=cfg.ID)
+        checkRate = tree.GetEntries(onlinecut)*cfg.totalrate/entries
+        info['histo'].SetBinContent(i, checkRate)
 
-# %%
-for i in tqdm(range(0, 40)): 
-    rateGMTTkMuonBarrel.produce(i)
-    rateGMTTkMuonEndcap.produce(i)
-    rateGMTTkMuonOverlap.produce(i)
-    rateGMTTkMuonAll.produce(i)
+    # print total rate for debugging
+    print("%d  %.1f %d" % (i, i*step, checkRate))
 
-# %%
-from ROOT import TFile
+# Save the rate histograms:
 
-out = TFile(f"my_rate_{filename}_{IDLabel}.root","recreate")
+out = TFile(cfg.outfile.format(file=cfg.file, IDLabel=cfg.IDLabel), "RECREATE")
 out.cd()
 
-# %%
-rateGMTTkMuonBarrel.formatHisto("rateGMTTkMuonBarrel","Rate GMTTkMuon Barrel")
-rateGMTTkMuonEndcap.formatHisto("rateGMTTkMuonEndcap","Rate GMTTkMuon Endcap")
-rateGMTTkMuonOverlap.formatHisto("rateGMTTkMuonOverlap","Rate GMTTkMuon Overlap")
-rateGMTTkMuonAll.formatHisto("rateGMTTkMuonAll","Rate GMTTkMuon All")
-
-# %%
-rateGMTTkMuonBarrel.histo.Write()
-rateGMTTkMuonEndcap.histo.Write()
-rateGMTTkMuonOverlap.histo.Write()
-rateGMTTkMuonAll.histo.Write()
-
-# %%
-out.Close()
-
-# %%
-
-
-
+for rate, info in cfg.rates.items():
+    info['histo'].Write()
