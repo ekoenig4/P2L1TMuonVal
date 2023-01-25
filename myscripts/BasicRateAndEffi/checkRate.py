@@ -36,18 +36,24 @@ entries = tree.GetEntriesFast()
 
 eventNo = 0
 
+
+class RateHisto:
+    def __init__(self, **kwargs):
+        self.__dict__.update(**kwargs)
+        self.formatHisto()
+        
 # Format for the rate histograms:
-def formatHisto(name, title, bins=cfg.formatHisto['bins'], start=cfg.formatHisto['start'], end=cfg.formatHisto['end'], color=cfg.formatHisto['color']):
-    histo = TH1F(name, title, bins, start, end)
-    histo.SetLineColor(globals()[color])
-    histo.SetMarkerColor(globals()[color])
-    histo.SetMarkerStyle(20)
-    histo.Sumw2()
-    return histo
+    def formatHisto(self):
+        histo = TH1F(self.name, self.title, self.bins, self.start, self.end)
+        histo.SetLineColor(globals()[self.color])
+        histo.SetMarkerColor(globals()[self.color])
+        histo.SetMarkerStyle(20)
+        histo.Sumw2()
+        self.histo = histo
 
 
-for rate, info in cfg.rates.items():
-    info['histo'] = formatHisto(rate, info['title'])
+for name, info in cfg.rates.items():
+    cfg.rates[name] = RateHisto(name=name, **info, **cfg.formatHisto, previous_rate=1)
 
 # Loop over thresholds
 step = (cfg.formatHisto['end']-cfg.formatHisto['start'])/cfg.formatHisto['bins']  # step size
@@ -57,11 +63,14 @@ print('Bin  Threshold  Rate')
 
 for i in range(0, 40):
 
-    for rate, info in cfg.rates.items():
-        onlinecut = f"Sum$( {' && '.join(info['onlinecut'])} )>0"
+    for name, rate in cfg.rates.items():
+        if rate.previous_rate == 0: continue
+
+        onlinecut = f"Sum$( {' && '.join(rate.onlinecut)} )>0"
         onlinecut = onlinecut.format(step=i*step, ID=cfg.ID)
         checkRate = tree.GetEntries(onlinecut)*cfg.totalrate/entries
-        info['histo'].SetBinContent(i, checkRate)
+        rate.histo.SetBinContent(i, checkRate)
+        rate.previous_rate = checkRate
 
     # print total rate for debugging
     print("%d  %.1f %d" % (i, i*step, checkRate))
@@ -71,5 +80,5 @@ for i in range(0, 40):
 out = TFile(cfg.outfile.format(file=cfg.file, IDLabel=cfg.IDLabel), "RECREATE")
 out.cd()
 
-for rate, info in cfg.rates.items():
-    info['histo'].Write()
+for name, rate in cfg.rates.items():
+    rate.histo.Write()

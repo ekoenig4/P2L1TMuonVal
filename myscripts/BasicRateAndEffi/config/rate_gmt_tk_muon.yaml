@@ -8,8 +8,8 @@ argparse:
 
     file: "MB_GMTIso_ID"
     filepath: "/eos/user/c/cepeda/trigger/"
+    outfile: "my_rate_{file}_{IDLabel}.root"
 
-outfile: "my_rate_{file}_{IDLabel}.root"
 
 formatHisto:
     bins: 50
