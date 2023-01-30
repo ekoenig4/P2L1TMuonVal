@@ -9,11 +9,10 @@ from ROOT import *
 import math, sys, git, os
 TH1.GetDefaultSumw2()
 
-sys.path.append( git.Repo('.', search_parent_directories=True).working_tree_dir )
-from myscripts.phase2_utils.yaml_cfg import Config
+from L1Trigger.P2L1TMuonVal import Config
 
 
-cfg = Config(f'{os.path.dirname(__file__)}/config/gmt_tk_muon_rates.yaml')
+cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/rate_gmt_tk_muon.yaml')
 cfg.parse_args()
 
 # filename="MinBias_GMTIso"
@@ -53,7 +52,7 @@ class RateHisto:
 
 
 for name, info in cfg.rates.items():
-    cfg.rates[name] = RateHisto(name=name, **info, **cfg.formatHisto, previous_rate=1)
+    cfg.rates[name] = RateHisto(name=name, **info, **cfg.formatHisto)
 
 # Loop over thresholds
 step = (cfg.formatHisto['end']-cfg.formatHisto['start'])/cfg.formatHisto['bins']  # step size
@@ -64,16 +63,13 @@ print('Bin  Threshold  Rate')
 for i in range(0, 40):
 
     for name, rate in cfg.rates.items():
-        if rate.previous_rate == 0: continue
-
         onlinecut = f"Sum$( {' && '.join(rate.onlinecut)} )>0"
         onlinecut = onlinecut.format(step=i*step, ID=cfg.ID)
         checkRate = tree.GetEntries(onlinecut)*cfg.totalrate/entries
         rate.histo.SetBinContent(i, checkRate)
-        rate.previous_rate = checkRate
 
     # print total rate for debugging
-    print("%d  %.1f %d" % (i, i*step, checkRate))
+    print(f"{i} {i*step:0.1f} {checkRate:0.1f}")
 
 # Save the rate histograms:
 

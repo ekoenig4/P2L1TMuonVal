@@ -7,10 +7,18 @@ class Config:
     General configuration class reading from a yaml formatted file
     """
 
-    def __init__(self, cfgpath: str):
-        with open(cfgpath, 'r') as cfg:
-            cfg = yaml.safe_load(cfg.read())
+    @classmethod
+    def from_str(cls, cfgstr : str):
+        cfg = yaml.safe_load(cfgstr)
+        return cls(**cfg)
 
+    @classmethod
+    def from_file(cls, cfgfile : str):
+        with open(cfgfile, 'r') as cfg:
+            cfg = yaml.safe_load(cfg.read())
+        return cls(**cfg, cfgfile=cfgfile)
+
+    def __init__(self, **cfg):
         parser_kwargs = cfg.pop('argparse', None)
         if parser_kwargs:
             self._parser = ArgumentParser()
@@ -24,7 +32,6 @@ class Config:
             )
 
         self.__dict__.update(**cfg)
-        self.cfgpath = cfgpath
 
     @property
     def yaml(self):
