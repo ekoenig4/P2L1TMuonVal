@@ -55,22 +55,24 @@ namespace L1Analysis {
       gmtTkMuonStubsCoord2Offline.clear();
       gmtTkMuonStubsEta1Offline.clear();
       gmtTkMuonStubsEta2Offline.clear();
-
-      gmtTkMuonIdLUTEta.clear();
-      gmtTkMuonIdLUTPt.clear();
-      gmtTkMuonIdLUTQuality.clear();
+      gmtTkMuonBx.clear();
 
 
-      gmtTkMuonSumPFIsoAll.clear();
+//      These only work with the dedicated low pt tuning branch
+//      by Michalis. Check comments in .cc file
+//      gmtTkMuonIdLUTEta.clear();
+//      gmtTkMuonIdLUTPt.clear();
+//      gmtTkMuonIdLUTQuality.clear();
+
+
+//    This is for PFIsolation, which is not standard (the default is hwIso)
+/*      gmtTkMuonSumPFIsoAll.clear();
       gmtTkMuonSumPFIsoCharged.clear();
       gmtTkMuonSumPFIsoEle.clear();
       gmtTkMuonSumPFIsoNeutral.clear();
       gmtTkMuonSumPFIsoPhoton.clear();
       gmtTkMuonSumPFIsoMuon.clear();
       gmtTkMuonSumPFIsoAllNoMu.clear();
-
-      gmtTkMuonBx.clear();
-
 
       nPFCands = 0;
       pfCandId.clear();
@@ -79,7 +81,7 @@ namespace L1Analysis {
       pfCandPhi.clear();
       pfCandzVtx.clear();
       pfCandChg.clear();
-
+*/
 
 
 
@@ -122,15 +124,15 @@ namespace L1Analysis {
     std::vector< std::vector<double> > gmtTkMuonStubsCoord2Offline;
     std::vector< std::vector<double> > gmtTkMuonStubsEta1Offline;
     std::vector< std::vector<double> > gmtTkMuonStubsEta2Offline;
-
-    std::vector<unsigned int>  gmtTkMuonIdLUTEta;
-    std::vector<unsigned int>  gmtTkMuonIdLUTPt;
-    std::vector<unsigned int>  gmtTkMuonIdLUTQuality;
-
-
     std::vector<short int> gmtTkMuonBx;
 
-    std::vector<double> gmtTkMuonSumPFIsoAll;
+//    For LUT tuning:
+//    std::vector<unsigned int>  gmtTkMuonIdLUTEta;
+//    std::vector<unsigned int>  gmtTkMuonIdLUTPt;
+//    std::vector<unsigned int>  gmtTkMuonIdLUTQuality;
+
+//    For PFIso studies:
+/*    std::vector<double> gmtTkMuonSumPFIsoAll;
     std::vector<double> gmtTkMuonSumPFIsoCharged;
     std::vector<double> gmtTkMuonSumPFIsoEle;
     std::vector<double> gmtTkMuonSumPFIsoNeutral;
@@ -145,7 +147,7 @@ namespace L1Analysis {
     std::vector<double> pfCandPhi;
     std::vector<double> pfCandzVtx;
     std::vector<int> pfCandChg;
-
+*/
 
   };
 }  // namespace L1Analysis
