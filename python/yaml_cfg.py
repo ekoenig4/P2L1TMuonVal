@@ -25,8 +25,10 @@ class Config:
 
             for key, value in parser_kwargs.items():
                 opt = key.replace('_', '-')
-                self._parser.add_argument(f'--{opt}', default=value,
-                                         type=type(value), help=f'Default = {value}')
+                value_type = type(value)
+                nargs = '+' if isinstance(value, list) else None
+                self._parser.add_argument(f'--{opt}', default=value, nargs=nargs,
+                                         type=value_type, help=f'Default = {value}')
             cfg.update(
                 **parser_kwargs
             )

@@ -9,8 +9,7 @@ from ROOT import *
 import math, sys, git, os
 TH1.GetDefaultSumw2()
 
-from L1Trigger.P2L1TMuonVal import Config
-
+from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
 
 cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/rate_gmt_tk_muon.yaml')
 cfg.parse_args()

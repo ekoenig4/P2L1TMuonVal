@@ -26,12 +26,19 @@ process.maxEvents = cms.untracked.PSet(
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
+with open("DYToLL_M-10To50_TuneCP5_14TeV-pythia8.txt", "r") as f:
+    dy_files = f.read().splitlines()
+nfiles = 10
+dy_files = dy_files[:nfiles]
+
+
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring( (
-      '/store/mc/Phase2Fall22DRMiniAOD/DYToLL_M-10To50_TuneCP5_14TeV-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_Pilot_125X_mcRun4_realistic_v2-v2/80000/00228d74-68bd-4432-9541-616c0d81ef37.root'
-#        '/store/relval/CMSSW_12_5_0_pre5/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_125X_mcRun4_realistic_v2_2026D88PU200-v1/10000/09f55350-2f01-47d2-94f8-b5dbaa35d5c0.root',
-     ) ),
+#     fileNames = cms.untracked.vstring( (
+#       '/store/mc/Phase2Fall22DRMiniAOD/DYToLL_M-10To50_TuneCP5_14TeV-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_Pilot_125X_mcRun4_realistic_v2-v2/80000/00228d74-68bd-4432-9541-616c0d81ef37.root'
+# #        '/store/relval/CMSSW_12_5_0_pre5/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_125X_mcRun4_realistic_v2_2026D88PU200-v1/10000/09f55350-2f01-47d2-94f8-b5dbaa35d5c0.root',
+#      ) ),
+    fileNames = cms.untracked.vstring(tuple(dy_files)),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -108,7 +115,10 @@ process.gmtTkMuonChecksTree = cms.EDAnalyzer("L1GMTTkMuonTreeProducer",
 )
 process.pathGMTCheck = cms.Path(process.gmtTkMuonChecksTree)
 
-
+	
+from L1Trigger.L1TNtuples.l1GeneratorTree_cfi  import l1GeneratorTree
+process.genTree=l1GeneratorTree.clone()
+process.pathGenTree = cms.Path(process.genTree)
 
 
 # Schedule definition
@@ -116,6 +126,7 @@ process.schedule = cms.Schedule(
 #process.raw2digi_step,
 #process.runmenutree,
 process.pathGMTCheck,
+process.pathGenTree,
 process.endjob_step)#,process.FEVTDEBUGHLToutput_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
