@@ -6,12 +6,13 @@
 
 #!/usr/bin/env python
 from L1Trigger.Phase2L1GMTNtuples.format_histo import format_histo, format_histo2d
-from L1Trigger.Phase2L1GMTNtuples.awkward_tools import merge_records, variable_collection, get_obj_dr
+from L1Trigger.Phase2L1GMTNtuples.awkward_tools import merge_records, variable_collection, get_dr
 # from L1Trigger.Phase2L1GMTNtuples.awkward_tools import fill_th1_array as fill_th1, fill_th2_array as fill_th2
 from L1Trigger.Phase2L1GMTNtuples.awkward_tools import fill_th1, fill_th2
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
 from ROOT import *
 import math, sys, git, os, tqdm, numpy as np, uproot as ut, awkward as ak, vector
+vector.register_awkward()
 TH1.GetDefaultSumw2()
 
 
@@ -19,11 +20,16 @@ cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/effi_gmt_tk_muon.yam
 cfg.parse_args()
 
 filename = f'{cfg.filepath}/{cfg.file}.root'
-l1_tree = ut.lazy( f"{filename}:gmtTkMuonChecksTree/L1PhaseIITree" )
 gen_tree = ut.lazy( f"{filename}:genTree/L1GenTree" )
+l1_tree = ut.lazy( f"{filename}:gmtTkMuonChecksTree/L1PhaseIITree" )
 
-tree = merge_records(l1_tree, gen_tree)
-entries = len(tree)
+l1_entries = len(l1_tree)
+gen_entries = len(gen_tree)
+
+if l1_entries != gen_entries:
+    raise ValueError()
+
+entries = gen_entries
 
 TH1.GetDefaultSumw2()
 
@@ -71,27 +77,39 @@ histos = namespace(
     effi_eta = format_histo(f"effi_{cfg.branch}_{cfg.label}_Eta", cfg.label, 50, -2.5, 2.5, color=kRed),
 )
 
+
+print (" ... Loading Gen and L1 Particles")
+
 if cfg.total > 0:
-    tree = tree[:cfg.total]
+    gen_tree = gen_tree[:,cfg.total]
+    l1_tree = l1_tree[:,cfg.total]
 
-##############################
-# Get Gen and L1 Particle Collections 
-##############################
+gen_parts = ak.zip(
+    dict(
+        pt = gen_tree.partPt,
+        eta = gen_tree.partEta,
+        phi = gen_tree.partPhi,
+    ),
+)
 
-gen_parts = variable_collection(tree, 'part')
-l1_parts = variable_collection(tree, cfg.branch)
-
+l1_parts = ak.zip(
+    dict(
+        pt = l1_tree[f'{cfg.branch}Pt'],
+        eta = l1_tree[f'{cfg.branch}Eta'],
+        phi = l1_tree[f'{cfg.branch}Phi'],
+    ),
+)
 ##############################
 # Make Gen particle selection 
 ##############################
 print (" ... Masking Gen Particles")
 gen_mask = [
-    gen_parts.Stat == 1,
-    abs(gen_parts.Id) == 13,
-    abs(gen_parts.Eta) > cfg.eta_range[0],
-    abs(gen_parts.Eta) < cfg.eta_range[1],
-    gen_parts.Pt > cfg.pt_range[0],
-    gen_parts.Pt < cfg.pt_range[1],
+    gen_tree.partStat == 1,
+    abs(gen_tree.partId) == 13,
+    abs(gen_tree.partEta) > cfg.eta_range[0],
+    abs(gen_tree.partEta) < cfg.eta_range[1],
+    gen_tree.partPt > cfg.pt_range[0],
+    gen_tree.partPt < cfg.pt_range[1],
 ]
 gen_mask = sum(gen_mask) == len(gen_mask)
 
@@ -105,16 +123,16 @@ gen_mask = gen_mask[gen_mask]
 print (" ... Filling Gen Particles")
 
 fill_th1(histos.gencount, gen_counts)
-fill_th1(histos.genpt, gen_parts.Pt)
-fill_th1(histos.geneta, gen_parts.Eta)
-fill_th2(histos.gen_2dpteta, gen_parts.Pt, gen_parts.Eta)
+fill_th1(histos.genpt, gen_parts.pt)
+fill_th1(histos.geneta, gen_parts.eta)
+fill_th2(histos.gen_2dpteta, gen_parts.pt, gen_parts.eta)
 
 ##############################
 # Find nearest L1 particle in delta R to Gen particle
 ##############################
 print (" ... Matching Gen Particles")
 
-l1_delta_r = get_obj_dr(gen_parts, l1_parts[:, None])
+l1_delta_r = get_dr(gen_parts.eta, gen_parts.phi, l1_parts.eta[:,None], l1_parts.phi[:,None])
 matched_delta_r, matched_l1_index = ak.min(l1_delta_r, axis=2), ak.argmin(l1_delta_r, axis=2)
 fill_th1(histos.bestdr, matched_delta_r)
 
@@ -129,20 +147,18 @@ matched_gen = gen_parts[matched_mask]
 ##############################
 print (" ... Filling Matched Gen Particles")
 
-matched_l1_pt = l1_parts.Pt[matched_l1_index][matched_mask]
-matched_l1_eta = l1_parts.Eta[matched_l1_index][matched_mask]
-matched_l1_phi = l1_parts.Phi[matched_l1_index][matched_mask]
+matched_l1 = l1_parts[matched_l1_index][matched_mask]
 
-ptres = (matched_l1_pt- matched_gen.Pt)/matched_gen.Pt
+ptres = (matched_l1.pt- matched_gen.pt)/matched_gen.pt
 fill_th1(histos.match_check, matched_l1_index)
-fill_th1(histos.match_genpt, matched_gen.Pt)
-fill_th1(histos.match_geneta, matched_gen.Eta)
-fill_th1(histos.match_genphi, matched_gen.Phi)
-fill_th2(histos.match_gen_2dpteta, matched_gen.Pt, matched_gen.Eta)
+fill_th1(histos.match_genpt, matched_gen.pt)
+fill_th1(histos.match_geneta, matched_gen.eta)
+fill_th1(histos.match_genphi, matched_gen.phi)
+fill_th2(histos.match_gen_2dpteta, matched_gen.pt, matched_gen.eta)
 
-fill_th1(histos.match_l1pt, matched_l1_pt)
-fill_th1(histos.match_l1eta, matched_l1_eta)
-fill_th1(histos.match_l1phi, matched_l1_phi)
+fill_th1(histos.match_l1pt, matched_l1.pt)
+fill_th1(histos.match_l1eta, matched_l1.eta)
+fill_th1(histos.match_l1phi, matched_l1.phi)
 fill_th1(histos.match_l1ptres, ptres)
 
 ##############################
@@ -151,9 +167,9 @@ fill_th1(histos.match_l1ptres, ptres)
 print (" ... Filling Unmatched Gen Particles")
 unmatched_gen = gen_parts[~matched_mask]
 
-fill_th1(histos.unmatch_genpt,  unmatched_gen.Pt)
-fill_th1(histos.unmatch_geneta, unmatched_gen.Eta)
-fill_th1(histos.unmatch_genphi, unmatched_gen.Phi)
+fill_th1(histos.unmatch_genpt,  unmatched_gen.pt)
+fill_th1(histos.unmatch_geneta, unmatched_gen.eta)
+fill_th1(histos.unmatch_genphi, unmatched_gen.phi)
 
 # To compute the efficiency: ratio of gen muons matched to l1  over total of
 # gen muons (using the binomial option B)
