@@ -1,31 +1,42 @@
-
 argparse:
-    # To normalize to total rate at 200:
-    # 2760.0*11246/1000 = 31038
-    label: "EXAMPLE_SIMPLEEFFI"
+    label: "simple"
 
-    file: "DoubleMu_GMTIso_ID"
+    file: "L1NtuplePhaseII_Step1"
     filepath: "/eos/uscms/store/user/ekoenig/trigger/"
-    outfile: "effi_example_{file}_{label}.root"
+    outfile: "effi_{file}_{label}.root"
 
     branch: "gmtTkMuon"
-    eta_range: [0, 2.4]
-    pt_range: [2, 100]
+    eta_min: -2.4
+    eta_max: 2.4
+    pt_min: 2.
+    pt_max: 100.
 
-    total: -1
+    barrel_eta: 0.83
+    endcap_eta: 1.24
+
+    total_events: -1
 
 matched_delta_r: 0.1
 
-gen_select:
-    - "{Stat} == 1"
-    - "abs({Id}) == 13"
-    - "abs({Eta}) > {eta_range[0]}"
-    - "abs({Eta}) < {eta_range[1]}"
-    - "{Pt} > {pt_range[0]}"
-    - "{Pt} < {pt_range[1]}"
+gen_variables:
+    pt: "partPt"
+    eta: "partEta"
+    phi: "partPhi"
 
-l1_matched_select:
-#     - "{NStubs} >= 2"
+gen_selection:
+    stat: "lambda t : t.partStat == 1"
+    ptcut: "lambda t : (t.partPt > {pt_min}) & (t.partPt < {pt_max})"
+    etacut: "lambda t : (t.partEta > {eta_min}) & (t.partEta < {eta_max})"
+    # barrelcut: "lambda t : ( np.abs(t.partEta) < 0.9)"
+    # overlapcut: "lambda t : (np.abs(t.partEta) > 0.9) & (np.abs(t.partEta)<1.3"
+    # endcapcut: "lambda t : np.abs(t.partEta) > 1.3"
+    
 
+l1_variables:
+    pt: "{branch}Pt"
+    eta: "{branch}Eta"
+    phi: "{branch}Phi"
+    nstubs: "{branch}NStubs"
 
-
+l1_selection:
+    # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"

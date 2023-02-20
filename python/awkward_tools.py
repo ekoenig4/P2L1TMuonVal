@@ -24,6 +24,11 @@ def variable_collection(records, prefix, sep="", keepname=False):
     }
     return ak.zip(branches, depth_limit=1)
 
+def cumand(masks):
+    for i in range(1, len(masks)):
+        masks[i] = masks[i] & masks[i-1]
+    return masks
+
 def get_dphi(phi_1, phi_2):
     dphi = phi_2 - phi_1
     dphi = ak.where( dphi >= np.pi, dphi - 2.0*np.pi, dphi)

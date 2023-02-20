@@ -1,4 +1,14 @@
 import ROOT
+
+def tset(tobj, **attrs):
+    for attr, value in attrs.items():
+        setter = getattr(tobj, f'Set{attr}', None)
+        if setter is None: 
+            print(f'[WARNING] unable to set attribute {attr} for {type(tobj)}')
+            continue
+        if not isinstance(value, (tuple, list)): value = [value]
+        setter(*value)
+    return tobj
     
 def format_histo(name, title, bins, start, end, color=ROOT.kBlack, **set_attrs):
     histo = ROOT.TH1F(name, title, bins, start, end)
@@ -7,13 +17,7 @@ def format_histo(name, title, bins, start, end, color=ROOT.kBlack, **set_attrs):
     histo.SetMarkerStyle(20)
     histo.Sumw2()
 
-    for attr, value in set_attrs.items():
-        setter = getattr(histo, f'Set{attr}', None)
-        if setter is None: 
-            print(f'[WARNING] unable to set attribute {attr} for TH1F')
-            continue
-        setter(histo, value)
-    return histo
+    return tset(histo, **set_attrs)
 
 
 def format_histo2d(name, title, bins, start, end, bins2, start2, end2, color=ROOT.kBlack, **set_attrs):
@@ -23,10 +27,4 @@ def format_histo2d(name, title, bins, start, end, bins2, start2, end2, color=ROO
     histo.SetMarkerStyle(20)
     histo.Sumw2()
 
-    for attr, value in set_attrs.items():
-        setter = getattr(histo, f'Set{attr}', None)
-        if setter is None: 
-            print(f'[WARNING] unable to set attribute {attr} for TH2F')
-            continue
-        setter(histo, value)
-    return histo
+    return tset(histo, **set_attrs)
