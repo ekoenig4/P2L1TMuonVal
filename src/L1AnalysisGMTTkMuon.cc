@@ -186,3 +186,24 @@ void L1Analysis::L1AnalysisGMTTkMuon::SetGmtTkMuon(const edm::Handle<std::vector
 */
 
 }
+
+
+void L1Analysis::L1AnalysisGMTTkMuon::SetGmtSaMuon(const edm::Handle<std::vector<l1t::SAMuon> > gmtSaMuon, unsigned maxL1Extra) {
+
+        const float lsb_pt = Phase2L1GMT::LSBpt;
+        const float lsb_phi = Phase2L1GMT::LSBphi;
+        const float lsb_eta = Phase2L1GMT::LSBeta;
+        const float lsb_z0 = Phase2L1GMT::LSBGTz0;
+        const float lsb_d0 = Phase2L1GMT::LSBGTd0;
+
+        for (unsigned int i = 0; i < gmtSaMuon->size() && l1extra_.nGmtSaMuons < maxL1Extra; i++) {
+                if (lsb_pt*gmtSaMuon->at(i).hwPt() > 0) {
+                        l1extra_.gmtSaMuonPt.push_back(lsb_pt*gmtSaMuon->at(i).hwPt()); //use pT
+                        l1extra_.gmtSaMuonEta.push_back(lsb_eta*gmtSaMuon->at(i).hwEta());
+                        l1extra_.gmtSaMuonPhi.push_back(lsb_phi*gmtSaMuon->at(i).hwPhi());
+                        l1extra_.gmtSaMuonZ0.push_back(lsb_z0*gmtSaMuon->at(i).hwZ0());
+                        l1extra_.gmtSaMuonD0.push_back(lsb_d0*gmtSaMuon->at(i).hwD0());
+                        l1extra_.nGmtSaMuons++;
+                }
+        }
+}

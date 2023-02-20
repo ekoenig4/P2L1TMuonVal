@@ -103,10 +103,12 @@ process.TFileService = cms.Service("TFileService",
 
 
 process.gmtTkMuonChecksTree = cms.EDAnalyzer("L1GMTTkMuonTreeProducer",
-   gmtTkMuonToken = cms.InputTag("l1tTkMuonsGmt",""),
-   maxL1Extra = cms.uint32(10)
+    gmtTkMuonToken = cms.InputTag("l1tTkMuonsGmt",""),
+    gmtSaMuonToken = cms.InputTag("l1tSAMuonsGmt", "promptSAMuons"),
+    maxL1Extra = cms.uint32(10)
 )
 process.pathGMTCheck = cms.Path(process.gmtTkMuonChecksTree)
+
 
 	
 from L1Trigger.L1TNtuples.l1GeneratorTree_cfi  import l1GeneratorTree

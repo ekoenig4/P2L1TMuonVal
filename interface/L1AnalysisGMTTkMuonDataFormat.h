@@ -83,9 +83,13 @@ namespace L1Analysis {
       pfCandChg.clear();
 */
 
-
-
-
+    
+      nGmtSaMuons = 0;
+      gmtSaMuonPt.clear();
+      gmtSaMuonEta.clear();
+      gmtSaMuonPhi.clear();
+      gmtSaMuonZ0.clear();
+      gmtSaMuonD0.clear();
     }
 
     unsigned int nGmtTkMuons;
@@ -125,6 +129,13 @@ namespace L1Analysis {
     std::vector< std::vector<double> > gmtTkMuonStubsEta1Offline;
     std::vector< std::vector<double> > gmtTkMuonStubsEta2Offline;
     std::vector<short int> gmtTkMuonBx;
+
+    unsigned int nGmtSaMuons;
+    std::vector<double> gmtSaMuonPt;
+    std::vector<double> gmtSaMuonEta;
+    std::vector<double> gmtSaMuonPhi;
+    std::vector<double> gmtSaMuonZ0;
+    std::vector<double> gmtSaMuonD0;
 
 //    For LUT tuning:
 //    std::vector<unsigned int>  gmtTkMuonIdLUTEta;
