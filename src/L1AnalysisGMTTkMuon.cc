@@ -203,6 +203,7 @@ void L1Analysis::L1AnalysisGMTTkMuon::SetGmtSaMuon(const edm::Handle<std::vector
                         l1extra_.gmtSaMuonPhi.push_back(lsb_phi*gmtSaMuon->at(i).hwPhi());
                         l1extra_.gmtSaMuonZ0.push_back(lsb_z0*gmtSaMuon->at(i).hwZ0());
                         l1extra_.gmtSaMuonD0.push_back(lsb_d0*gmtSaMuon->at(i).hwD0());
+                        l1extra_.gmtSaMuonChg.push_back(gmtSaMuon->at(i).hwCharge());
                         l1extra_.nGmtSaMuons++;
                 }
         }

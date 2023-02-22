@@ -90,6 +90,7 @@ namespace L1Analysis {
       gmtSaMuonPhi.clear();
       gmtSaMuonZ0.clear();
       gmtSaMuonD0.clear();
+      gmtSaMuonChg.clear();
     }
 
     unsigned int nGmtTkMuons;
@@ -136,6 +137,7 @@ namespace L1Analysis {
     std::vector<double> gmtSaMuonPhi;
     std::vector<double> gmtSaMuonZ0;
     std::vector<double> gmtSaMuonD0;
+    std::vector<double> gmtSaMuonChg;
 
 //    For LUT tuning:
 //    std::vector<unsigned int>  gmtTkMuonIdLUTEta;
