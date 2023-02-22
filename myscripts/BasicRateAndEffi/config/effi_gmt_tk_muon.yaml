@@ -22,6 +22,8 @@ gen_variables:
     pt: "partPt"
     eta: "partEta"
     phi: "partPhi"
+    E: "partE"
+    charge: "partCh"
 
 gen_selection:
     stat: "lambda t : t.partStat == 1"
@@ -36,7 +38,9 @@ l1_variables:
     pt: "{branch}Pt"
     eta: "{branch}Eta"
     phi: "{branch}Phi"
-    nstubs: "{branch}NStubs"
+    # E: "{branch}E"
+    charge: "{branch}Chg"
+    # nstubs: "{branch}NStubs"
 
 l1_selection:
     # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"
