@@ -16,11 +16,22 @@ def get_dr(eta_1, phi_1, eta_2, phi_2):
     dphi = get_dphi(phi_1, phi_2)
     return np.sqrt(deta**2 + dphi**2)
 
-def pair_leading_parts(parts):
+def pair_leading_parts(parts, return_mask=False):
+    """Pair leading two particles in the list
+
+    Args:
+        parts (ak.Record): Record of particle values configured with_name = Momentum4D.
+        return_mask (bool, optional): return mask used to get events with at least 2 particles. Defaults to False.
+
+    Returns:
+        ak.Record: The P4 sum of the paired particles
+    """
     has_two_parts = ak.count(parts.pt, axis=1) >= 2
     selected_parts = parts[has_two_parts]
     leading_part, subleading_part = selected_parts[:,0], selected_parts[:,1]
     dipart = leading_part + subleading_part
+    if return_mask:
+        return dipart, has_two_parts
     return dipart
 
 def pair_opposite_charged_parts(parts):

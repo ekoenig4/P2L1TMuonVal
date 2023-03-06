@@ -3,10 +3,10 @@ argparse:
 
     file: "L1NtuplePhaseII_Step1"
     filepath: "/eos/uscms/store/user/ekoenig/trigger/"
-    outfile: "effi_{file}_{branch}_{label}.root"
+    outfile: "dimuon_{file}_{branch}_{label}.root"
 
     branch: "gmtTkMuon"
-    eta_min: 0   
+    eta_min: 0
     eta_max: 2.4
     pt_min: 5.
     pt_max: 100.
@@ -16,7 +16,7 @@ argparse:
 
     total: -1
 
-matched_delta_r: 0.1
+# matched_delta_r: 0.1
 
 gen_variables:
     pt: "partPt"
@@ -28,7 +28,7 @@ gen_variables:
 gen_selection:
     stat: "lambda t : t.partStat == 1"
     ptcut: "lambda t : (t.partPt > {pt_min})"
-    etacut: "lambda t : (abs(t.partEta) > {eta_min}) & (abs(t.partEta) < {eta_max})"
+    
 
 l1_variables:
     pt: "{branch}Pt"
@@ -39,6 +39,5 @@ l1_variables:
     # nstubs: "{branch}NStubs"
 
 l1_selection:
-    ptcut: "lambda t : (t.{branch}Pt > {pt_min}))"
-    etacut: "lambda t : (abs(t.{branch}Eta) > {eta_min}) & (abs(t.{branch}Eta) < {eta_max})"
+    ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
     # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"

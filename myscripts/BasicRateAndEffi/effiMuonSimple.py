@@ -260,7 +260,7 @@ print (" ... Filling Matched Gen Particles")
 
 matched_l1 = l1_parts[matched_l1_index][matched_mask]
 
-ptres = (matched_l1.pt- matched_gen.pt)/matched_gen.pt
+ptres = (matched_l1.pt-matched_gen.pt)/matched_gen.pt
 matched_l1_dimuon = pair_leading_parts(matched_l1)
 
 fill_th1(histos.match_check, matched_l1_index)

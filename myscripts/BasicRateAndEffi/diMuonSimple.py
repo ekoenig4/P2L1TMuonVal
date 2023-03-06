@@ -1,0 +1,230 @@
+###############################################################
+###############################################################
+
+
+#!/usr/bin/env python3
+from typing import Any
+from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo2d, fill_th1, fill_th2
+from L1Trigger.Phase2L1GMTNtuples.awkward_tools import cumand
+from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_leading_parts
+from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
+from ROOT import *
+from collections import defaultdict
+import math, sys, git, os, tqdm, numpy as np, uproot as ut, awkward as ak, vector
+vector.register_awkward()
+TH1.GetDefaultSumw2()
+
+
+cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/di_gmt_muon.yaml')
+cfg.parse_args() # read all avaiable argparse variables from command line if given
+cfg.replace() # replace all {} variables in config where available
+
+cfg.pt_range = (cfg.pt_min, cfg.pt_max)
+cfg.eta_range = (cfg.eta_min, cfg.eta_max)
+
+
+filename = os.path.join(cfg.filepath,f'{cfg.file}.root')
+gen_tree = ut.lazy( f"{filename}:genTree/L1GenTree" )
+l1_tree = ut.lazy( f"{filename}:gmtTkMuonChecksTree/L1PhaseIITree" )
+
+gen_entries = len(gen_tree)
+l1_entries = len(l1_tree)
+
+if l1_entries != gen_entries:
+    raise ValueError()
+
+entries = gen_entries
+
+TH1.GetDefaultSumw2()
+
+print("=========================================================")
+print("Computing L1/Gen DiMuon Distributions from %s" % filename)
+print("Total Events: %d" % entries)
+print("Pt Range: %.0f - %.0f" % tuple(cfg.pt_range))
+print("Eta Range: %.1f - %.1f" % tuple(cfg.eta_range))
+print("=========================================================")
+
+class namespace:
+    def __init__(self, **kwargs):
+        self._keys = list(kwargs.keys())
+        self.__dict__.update(**kwargs)
+    def __setitem__(self, key : str, value):
+        self._keys.append(key)
+        self.__dict__[key] = value
+    def __getitem__(self, key : str): return self.__dict__[key]
+    def keys(self): return self._keys
+    def values(self): return ( getattr(self, key) for key in self._keys )
+    def items(self):
+        return ( (key, getattr(self, key)) for key in self._keys )
+
+def format_pt_histo(name, title, bins=20, lo=0, hi=100, **kwargs):
+    return format_histo(name, title, bins, lo, hi, **kwargs)
+def format_eta_histo(name, title, bins=50, lo=-2.5, hi=2.5, **kwargs):
+    return format_histo(name, title, bins, lo, hi, **kwargs)
+def format_phi_histo(name, title, bins=100, lo=-4, hi=4, **kwargs):
+    return format_histo(name, title, bins, lo, hi, **kwargs)
+def format_m_histo(name, title, bins=100, lo=0, hi=200, **kwargs):
+    return format_histo(name, title, bins, lo, hi, **kwargs)
+def format_pteta_histo2d(name, title, xbins=20, xlo=0, xhi=100, ybins=50, ylo=-2.5, yhi=2.5, **kwargs):
+    return format_histo2d(name, title, xbins, xlo, xhi, ybins, ylo, yhi, **kwargs)
+
+histos = namespace(
+    
+    ###########################################
+    # Gen Object Histograms
+    ###########################################
+    genmuon_count = format_histo("CountGenMuons", "CountGenPt20", 10, 0, 10),
+
+    genpt = format_pt_histo("genMuonPt", "Gen Muon Pt"),
+    geneta = format_eta_histo("genMuonEta", "Gen Muon Eta"),
+    gen_2dpteta = format_pteta_histo2d(f"genMuon2DPtEta", "Gen Muon Pt vs Eta"),
+
+    gen_dimuon_m = format_m_histo("genDiMuonMass","Gen Di-Muon Mass;M_{#mu #mu} [GeV];"),
+
+    gen_bb_dimuon_m = format_m_histo("gen_bb_DiMuonMass", "Gen Di-Muon Mass barrel-barrel;M_{#mu #mu} [GeV];"),
+    gen_bo_dimuon_m = format_m_histo("gen_bo_DiMuonMass", "Gen Di-Muon Mass barrel-overlap;M_{#mu #mu} [GeV];"),
+    gen_be_dimuon_m = format_m_histo("gen_be_DiMuonMass", "Gen Di-Muon Mass barrel-endcap;M_{#mu #mu} [GeV];"),
+    
+    gen_oo_dimuon_m = format_m_histo("gen_oo_DiMuonMass", "Gen Di-Muon Mass overlap-overlap;M_{#mu #mu} [GeV];"),
+    gen_oe_dimuon_m = format_m_histo("gen_oe_DiMuonMass", "Gen Di-Muon Mass overlap-endcap;M_{#mu #mu} [GeV];"),
+    gen_ee_dimuon_m = format_m_histo("gen_ee_DiMuonMass", "Gen Di-Muon Mass endcap-endcap;M_{#mu #mu} [GeV];"),
+
+    ###########################################
+    # L1 Object Histograms
+    ###########################################
+    l1pt = format_pt_histo(f"l1_{cfg.branch}_Pt", cfg.label),
+    l1eta = format_eta_histo(f"l1_{cfg.branch}_Eta", cfg.label),
+    l1phi = format_phi_histo(f"l1_{cfg.branch}_Phi", cfg.label),
+
+    l1_dimuon_m = format_m_histo(f"l1_{cfg.branch}_DiMuonMass", cfg.label),
+
+    l1_bb_dimuon_m = format_m_histo(f"l1_bb_{cfg.branch}_DiMuonMass", cfg.label),
+    l1_bo_dimuon_m = format_m_histo(f"l1_bo_{cfg.branch}_DiMuonMass", cfg.label),
+    l1_be_dimuon_m = format_m_histo(f"l1_be_{cfg.branch}_DiMuonMass", cfg.label),
+    l1_oo_dimuon_m = format_m_histo(f"l1_oo_{cfg.branch}_DiMuonMass", cfg.label),
+    l1_oe_dimuon_m = format_m_histo(f"l1_oe_{cfg.branch}_DiMuonMass", cfg.label),
+    l1_ee_dimuon_m = format_m_histo(f"l1_ee_{cfg.branch}_DiMuonMass", cfg.label),
+    
+)
+print (" ... Loading Gen and L1 Particles")
+
+if cfg.total > 0:
+    gen_tree = gen_tree[:cfg.total]
+    l1_tree = l1_tree[:cfg.total]
+
+gen_parts = ak.zip(
+    dict({
+        key : gen_tree[field]
+        for key, field in cfg.gen_variables.items()
+    },
+    m = 0.1 * ak.ones_like(gen_tree[f"partPt"]),
+    ), 
+    with_name="Momentum4D"
+)
+
+l1_parts = ak.zip(
+    dict({
+        key : l1_tree[field]
+        for key, field in cfg.l1_variables.items()
+    },
+    m = 0.1 * ak.ones_like(l1_tree[f"{cfg.branch}Pt"]),
+    ), 
+    with_name="Momentum4D"
+)
+##############################
+# Make Gen particle selection 
+##############################
+print (" ... Masking Gen Particles")
+
+gen_muon_mask = np.abs(gen_tree.partId) == 13
+if getattr(cfg, 'gen_selection', None):
+    for key, selection in cfg.gen_selection.items():
+        print(f' ... ... applying {selection}')
+        gen_muon_mask = gen_muon_mask & eval(selection)(gen_tree) 
+
+gen_muon_counts = ak.sum(gen_muon_mask,axis=1)
+gen_parts = gen_parts[gen_muon_mask]
+
+##############################
+# Paring leading gen particles (for now)
+# TODO should only pair particles with opposite charges, but charge not what I expected in L1 tree
+##############################
+
+print(" ... Pairing Gen Particles")
+gen_dimuon, gen_dimuon_mask = pair_leading_parts(gen_parts, return_mask=True)
+gen_muons = gen_parts[gen_dimuon_mask][:,:2]
+
+fill_th1(histos.gen_dimuon_m, gen_dimuon.m)
+
+n_gen_barrel_muons = ak.sum( abs(gen_muons.eta) < cfg.barrel_eta, axis=1)
+n_gen_overlap_muons = ak.sum( (abs(gen_muons.eta) > cfg.barrel_eta) & (abs(gen_muons.eta) < cfg.endcap_eta), axis=1)
+n_gen_endcap_muons = ak.sum( abs(gen_muons.eta) > cfg.endcap_eta, axis=1)
+
+fill_th1(histos.gen_bb_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 2)])
+fill_th1(histos.gen_bo_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_overlap_muons == 1)])
+fill_th1(histos.gen_be_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_endcap_muons == 1)])
+
+fill_th1(histos.gen_oo_dimuon_m, gen_dimuon.m[(n_gen_overlap_muons == 2)])
+fill_th1(histos.gen_oe_dimuon_m, gen_dimuon.m[(n_gen_overlap_muons == 1) & (n_gen_endcap_muons == 1)])
+fill_th1(histos.gen_ee_dimuon_m, gen_dimuon.m[(n_gen_endcap_muons == 2)])
+
+##############################
+# Fill Gen particle values
+##############################
+
+print (" ... Filling Gen Particles")
+
+fill_th1(histos.genmuon_count, gen_muon_counts)
+
+fill_th1(histos.genpt, gen_parts.pt)
+fill_th1(histos.geneta, gen_parts.eta)
+fill_th2(histos.gen_2dpteta, gen_parts.pt, gen_parts.eta)
+
+##############################
+# Make L1 particle selection 
+##############################
+print (" ... Masking L1 Particles")
+
+l1_muon_mask = l1_parts.pt > 0
+if getattr(cfg, 'l1_selection', None):
+    for key, selection in cfg.l1_selection.items():
+        print(f' ... ... applying {selection}')
+        l1_muon_mask = l1_muon_mask & eval(selection)(l1_tree) 
+
+    l1_parts = l1_parts[l1_muon_mask]
+
+##############################
+# Fill matched Gen/L1 particle values
+##############################
+print (" ... Filling L1 Particles")
+
+l1 = l1_parts
+l1_dimuon, l1_dimuon_mask = pair_leading_parts(l1, return_mask=True)
+l1_muons = l1_parts[l1_dimuon_mask][:,:2]
+
+n_l1_barrel_muons = ak.sum( abs(l1_muons.eta) < cfg.barrel_eta, axis=1)
+n_l1_overlap_muons = ak.sum( (abs(l1_muons.eta) > cfg.barrel_eta) & (abs(l1_muons.eta) < cfg.endcap_eta), axis=1)
+n_l1_endcap_muons = ak.sum( abs(l1_muons.eta) > cfg.endcap_eta, axis=1)
+
+fill_th1(histos.l1_bb_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 2)])
+fill_th1(histos.l1_bo_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_overlap_muons == 1)])
+fill_th1(histos.l1_be_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_endcap_muons == 1)])
+
+fill_th1(histos.l1_oo_dimuon_m, l1_dimuon.m[(n_l1_overlap_muons == 2)])
+fill_th1(histos.l1_oe_dimuon_m, l1_dimuon.m[(n_l1_overlap_muons == 1) & (n_l1_endcap_muons == 1)])
+fill_th1(histos.l1_ee_dimuon_m, l1_dimuon.m[(n_l1_endcap_muons == 2)])
+
+fill_th1(histos.l1pt, l1.pt)
+fill_th1(histos.l1eta, l1.eta)
+fill_th1(histos.l1phi, l1.phi)
+fill_th1(histos.l1_dimuon_m, l1_dimuon.m)
+
+# SAVE OUTPUT
+#################
+print(f"Saving  the dimuon distributions in {cfg.outfile}")
+
+out = TFile(cfg.outfile, "RECREATE")
+out.cd()
+
+for key, histo in histos.items():
+    histo.Write()
