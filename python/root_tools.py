@@ -1,6 +1,14 @@
 import ROOT
 import awkward as ak
 import numpy as np
+import os 
+
+def save_canvas(canvas, fname, fmt=['png']):
+    dirname = os.path.dirname(fname)
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+    for _fmt in fmt:
+        canvas.SaveAs(f"{fname}.{_fmt}")
 
 def tset(tobj, **attrs):
     for attr, value in attrs.items():

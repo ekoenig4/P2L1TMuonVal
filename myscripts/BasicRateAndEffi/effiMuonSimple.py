@@ -6,7 +6,7 @@
 from typing import Any
 from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo2d, fill_th1, fill_th2
 from L1Trigger.Phase2L1GMTNtuples.awkward_tools import cumand
-from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_opposite_charged_parts, pair_opposite_hw_charged_parts
+from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_leading_parts
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
 from ROOT import *
 from collections import defaultdict
@@ -92,69 +92,69 @@ histos = namespace(
 
     gen_dimuon_m = format_m_histo("genDiMuonMass","Gen Di-Muon Mass;M_{#mu #mu} [GeV];"),
 
-    bestdr = format_histo(f"bestDeltaR_{cfg.branch}_{cfg.label}","Best Delta R", 100, 0, 1),
+    bestdr = format_histo(f"bestDeltaR_{cfg.branch}","Best Delta R", 100, 0, 1),
 
     ###########################################
     # Matched L1 Gen Object Histograms
     ###########################################
 
-    match_check = format_histo(f"matchCheck_{cfg.branch}_{cfg.label}", "", 10, 0 ,10),
+    match_check = format_histo(f"matchCheck_{cfg.branch}", "", 10, 0 ,10),
 
-    match_genpt = format_pt_histo(f"matchGen_{cfg.branch}_{cfg.label}_Pt", cfg.label),
+    match_genpt = format_pt_histo(f"matchGen_{cfg.branch}_Pt", cfg.label),
 
-    match_gen_barrel_pt = format_pt_histo(f"matchGen_barrel_{cfg.branch}_{cfg.label}_Pt", cfg.label),
-    match_gen_overlap_pt = format_pt_histo(f"matchGen_overlap_{cfg.branch}_{cfg.label}_Pt", cfg.label),
-    match_gen_endcap_pt = format_pt_histo(f"matchGen_endcap_{cfg.branch}_{cfg.label}_Pt", cfg.label),
+    match_gen_barrel_pt = format_pt_histo(f"matchGen_barrel_{cfg.branch}_Pt", cfg.label),
+    match_gen_overlap_pt = format_pt_histo(f"matchGen_overlap_{cfg.branch}_Pt", cfg.label),
+    match_gen_endcap_pt = format_pt_histo(f"matchGen_endcap_{cfg.branch}_Pt", cfg.label),
 
-    match_geneta = format_eta_histo(f"matchGen_{cfg.branch}_{cfg.label}_Eta", cfg.label),
+    match_geneta = format_eta_histo(f"matchGen_{cfg.branch}_Eta", cfg.label),
 
-    match_gen_barrel_eta = format_eta_histo(f"matchGen_barrel_{cfg.branch}_{cfg.label}_Eta", cfg.label),
-    match_gen_overlap_eta = format_eta_histo(f"matchGen_overlap_{cfg.branch}_{cfg.label}_Eta", cfg.label),
-    match_gen_endcap_eta = format_eta_histo(f"matchGen_endcap_{cfg.branch}_{cfg.label}_Eta", cfg.label),
+    match_gen_barrel_eta = format_eta_histo(f"matchGen_barrel_{cfg.branch}_Eta", cfg.label),
+    match_gen_overlap_eta = format_eta_histo(f"matchGen_overlap_{cfg.branch}_Eta", cfg.label),
+    match_gen_endcap_eta = format_eta_histo(f"matchGen_endcap_{cfg.branch}_Eta", cfg.label),
 
-    match_genphi = format_phi_histo(f"matchGen_{cfg.branch}_{cfg.label}_Phi", cfg.label),
-    match_gen_2dpteta = format_pteta_histo2d(f"matchGen_{cfg.branch}_{cfg.label}_2DPtEta", cfg.label),
+    match_genphi = format_phi_histo(f"matchGen_{cfg.branch}_Phi", cfg.label),
+    match_gen_2dpteta = format_pteta_histo2d(f"matchGen_{cfg.branch}_2DPtEta", cfg.label),
     
-    match_gen_dimuon_m = format_m_histo(f"matchGen_{cfg.branch}_{cfg.label}_DiMuonMass", cfg.label),
+    match_gen_dimuon_m = format_m_histo(f"matchGen_{cfg.branch}_DiMuonMass", cfg.label),
 
     ###########################################
     # Unmatched L1 Gen Object Histograms
     ###########################################
 
-    unmatch_genpt = format_pt_histo(f"noMatchGen_{cfg.branch}_{cfg.label}_Pt", cfg.label),
-    unmatch_geneta = format_eta_histo(f"noMatchGen_{cfg.branch}_{cfg.label}_Eta", cfg.label),
-    unmatch_genphi = format_phi_histo(f"noMatchGen_{cfg.branch}_{cfg.label}_Phi", cfg.label),
+    unmatch_genpt = format_pt_histo(f"noMatchGen_{cfg.branch}_Pt", cfg.label),
+    unmatch_geneta = format_eta_histo(f"noMatchGen_{cfg.branch}_Eta", cfg.label),
+    unmatch_genphi = format_phi_histo(f"noMatchGen_{cfg.branch}_Phi", cfg.label),
 
-    unmatch_gen_dimuon_m = format_m_histo(f"noMatchGen_{cfg.branch}_{cfg.label}_DiMuonMass", cfg.label),
+    unmatch_gen_dimuon_m = format_m_histo(f"noMatchGen_{cfg.branch}_DiMuonMass", cfg.label),
     ###########################################
     # Matched L1 Object Histograms
     ###########################################
 
-    match_l1pt = format_pt_histo(f"match_l1_{cfg.branch}_{cfg.label}_Pt", cfg.label),
-    match_l1eta = format_eta_histo(f"match_l1_{cfg.branch}_{cfg.label}_Eta", cfg.label),
-    match_l1phi = format_phi_histo(f"match_l1_{cfg.branch}_{cfg.label}_Phi", cfg.label),
+    match_l1pt = format_pt_histo(f"match_l1_{cfg.branch}_Pt", cfg.label),
+    match_l1eta = format_eta_histo(f"match_l1_{cfg.branch}_Eta", cfg.label),
+    match_l1phi = format_phi_histo(f"match_l1_{cfg.branch}_Phi", cfg.label),
 
-    match_l1ptres = format_histo(f"match_l1_{cfg.branch}_{cfg.label}_ptres","l1 pt - gen pt / gen pt", 100, -1, 1),
+    match_l1ptres = format_histo(f"match_l1_{cfg.branch}_ptres","l1 pt - gen pt / gen pt", 100, -1, 1),
 
-    match_l1_dimuon_m = format_m_histo(f"match_l1_{cfg.branch}_{cfg.label}_DiMuonMass", cfg.label),
+    match_l1_dimuon_m = format_m_histo(f"match_l1_{cfg.branch}_DiMuonMass", cfg.label),
     ###########################################
     # Efficiency Histograms
     ###########################################
 
-    effi_pt = format_pt_histo(f"effi_{cfg.branch}_{cfg.label}_Pt", cfg.label, color=kRed),
+    effi_pt = format_pt_histo(f"effi_{cfg.branch}_Pt", cfg.label, color=kRed),
 
-    effi_barrel_pt = format_pt_histo(f"effi_barrel_{cfg.branch}_{cfg.label}_Pt", cfg.label, color=kRed),
-    effi_overlap_pt = format_pt_histo(f"effi_overlap_{cfg.branch}_{cfg.label}_Pt", cfg.label, color=kRed),
-    effi_endcap_pt = format_pt_histo(f"effi_endcap_{cfg.branch}_{cfg.label}_Pt", cfg.label, color=kRed),
+    effi_barrel_pt = format_pt_histo(f"effi_barrel_{cfg.branch}_Pt", cfg.label, color=kRed),
+    effi_overlap_pt = format_pt_histo(f"effi_overlap_{cfg.branch}_Pt", cfg.label, color=kRed),
+    effi_endcap_pt = format_pt_histo(f"effi_endcap_{cfg.branch}_Pt", cfg.label, color=kRed),
 
-    effi_eta = format_eta_histo(f"effi_{cfg.branch}_{cfg.label}_Eta", cfg.label, color=kRed),
-    effi_2dpteta = format_pteta_histo2d(f"effi_{cfg.branch}_{cfg.label}_2DPtEta", cfg.label),
+    effi_eta = format_eta_histo(f"effi_{cfg.branch}_Eta", cfg.label, color=kRed),
+    effi_2dpteta = format_pteta_histo2d(f"effi_{cfg.branch}_2DPtEta", cfg.label),
 )
 print (" ... Loading Gen and L1 Particles")
 
-if cfg.total_events > 0:
-    gen_tree = gen_tree[:,cfg.total]
-    l1_tree = l1_tree[:,cfg.total]
+if cfg.total > 0:
+    gen_tree = gen_tree[:cfg.total]
+    l1_tree = l1_tree[:cfg.total]
 
 gen_parts = ak.zip(
     {
@@ -197,7 +197,7 @@ gen_endcap_mask = ( np.abs(gen_tree.partEta) > cfg.endcap_eta )[gen_muon_mask]
 ##############################
 
 print(" ... Pairing Gen Particles")
-gen_dimuon = pair_opposite_charged_parts(gen_parts)
+gen_dimuon = pair_leading_parts(gen_parts)
 fill_th1(histos.gen_dimuon_m, gen_dimuon.m)
 
 ##############################
@@ -252,7 +252,7 @@ matched_barrel_mask = gen_barrel_mask[matched_mask]
 matched_overlap_mask = gen_overlap_mask[matched_mask]
 matched_endcap_mask = gen_endcap_mask[matched_mask]
 
-matched_gen_dimuon = pair_opposite_charged_parts(matched_gen)
+matched_gen_dimuon = pair_leading_parts(matched_gen)
 ##############################
 # Fill matched Gen/L1 particle values
 ##############################
@@ -261,7 +261,7 @@ print (" ... Filling Matched Gen Particles")
 matched_l1 = l1_parts[matched_l1_index][matched_mask]
 
 ptres = (matched_l1.pt- matched_gen.pt)/matched_gen.pt
-matched_l1_dimuon = pair_opposite_hw_charged_parts(matched_l1)
+matched_l1_dimuon = pair_leading_parts(matched_l1)
 
 fill_th1(histos.match_check, matched_l1_index)
 

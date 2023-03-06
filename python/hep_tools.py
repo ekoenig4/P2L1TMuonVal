@@ -43,7 +43,7 @@ def pair_opposite_charged_parts(parts):
     dipart = leading_part + subleading_part
     return dipart
 
-def pair_opposite_hw_charged_parts(parts, charge=1):
+def pair_opposite_hw_charged_parts(parts):
     """Pair particles together that have opposite signed hw charges 
 
     Args:

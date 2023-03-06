@@ -6,7 +6,7 @@ argparse:
     outfile: "effi_{file}_{label}.root"
 
     branch: "gmtTkMuon"
-    eta_min: -2.4
+    eta_min: -2.4   
     eta_max: 2.4
     pt_min: 2.
     pt_max: 100.
@@ -14,7 +14,7 @@ argparse:
     barrel_eta: 0.83
     endcap_eta: 1.24
 
-    total_events: -1
+    total: -1
 
 matched_delta_r: 0.1
 
