@@ -7,6 +7,7 @@ from typing import Any
 from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo2d, fill_th1, fill_th2
 from L1Trigger.Phase2L1GMTNtuples.awkward_tools import cumand
 from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_leading_parts
+from L1Trigger.Phase2L1GMTNtuples.scaling_tools import unscale_l1_muon_pt
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
 from ROOT import *
 from collections import defaultdict
@@ -84,10 +85,18 @@ histos = namespace(
     gen_bb_dimuon_m = format_m_histo("gen_bb_DiMuonMass", "Gen Di-Muon Mass barrel-barrel;M_{#mu #mu} [GeV];"),
     gen_bo_dimuon_m = format_m_histo("gen_bo_DiMuonMass", "Gen Di-Muon Mass barrel-overlap;M_{#mu #mu} [GeV];"),
     gen_be_dimuon_m = format_m_histo("gen_be_DiMuonMass", "Gen Di-Muon Mass barrel-endcap;M_{#mu #mu} [GeV];"),
+    # gen_bc_dimuon_m = format_m_histo("gen_bc_DiMuonMass", "Gen Di-Muon Mass barrel-center endcap;M_{#mu #mu} [GeV];"),
+    # gen_bf_dimuon_m = format_m_histo("gen_bf_DiMuonMass", "Gen Di-Muon Mass barrel-forward endcap;M_{#mu #mu} [GeV];"),
     
     gen_oo_dimuon_m = format_m_histo("gen_oo_DiMuonMass", "Gen Di-Muon Mass overlap-overlap;M_{#mu #mu} [GeV];"),
     gen_oe_dimuon_m = format_m_histo("gen_oe_DiMuonMass", "Gen Di-Muon Mass overlap-endcap;M_{#mu #mu} [GeV];"),
+    # gen_oc_dimuon_m = format_m_histo("gen_oc_DiMuonMass", "Gen Di-Muon Mass overlap-center endcap;M_{#mu #mu} [GeV];"),
+    # gen_of_dimuon_m = format_m_histo("gen_of_DiMuonMass", "Gen Di-Muon Mass overlap-forward endcap;M_{#mu #mu} [GeV];"),
+    
     gen_ee_dimuon_m = format_m_histo("gen_ee_DiMuonMass", "Gen Di-Muon Mass endcap-endcap;M_{#mu #mu} [GeV];"),
+    # gen_cc_dimuon_m = format_m_histo("gen_cc_DiMuonMass", "Gen Di-Muon Mass center endcap-center endcap;M_{#mu #mu} [GeV];"),
+    # gen_cf_dimuon_m = format_m_histo("gen_cf_DiMuonMass", "Gen Di-Muon Mass center endcap-forward endcap;M_{#mu #mu} [GeV];"),
+    # gen_ff_dimuon_m = format_m_histo("gen_ff_DiMuonMass", "Gen Di-Muon Mass forward endcap-forward endcap;M_{#mu #mu} [GeV];"),
 
     ###########################################
     # L1 Object Histograms
@@ -101,9 +110,18 @@ histos = namespace(
     l1_bb_dimuon_m = format_m_histo(f"l1_bb_{cfg.branch}_DiMuonMass", cfg.label),
     l1_bo_dimuon_m = format_m_histo(f"l1_bo_{cfg.branch}_DiMuonMass", cfg.label),
     l1_be_dimuon_m = format_m_histo(f"l1_be_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_bc_dimuon_m = format_m_histo(f"l1_bc_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_bf_dimuon_m = format_m_histo(f"l1_bf_{cfg.branch}_DiMuonMass", cfg.label),
+
     l1_oo_dimuon_m = format_m_histo(f"l1_oo_{cfg.branch}_DiMuonMass", cfg.label),
     l1_oe_dimuon_m = format_m_histo(f"l1_oe_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_oc_dimuon_m = format_m_histo(f"l1_oc_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_of_dimuon_m = format_m_histo(f"l1_of_{cfg.branch}_DiMuonMass", cfg.label),
+
     l1_ee_dimuon_m = format_m_histo(f"l1_ee_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_cc_dimuon_m = format_m_histo(f"l1_cc_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_cf_dimuon_m = format_m_histo(f"l1_cf_{cfg.branch}_DiMuonMass", cfg.label),
+    # l1_ff_dimuon_m = format_m_histo(f"l1_ff_{cfg.branch}_DiMuonMass", cfg.label),
     
 )
 print (" ... Loading Gen and L1 Particles")
@@ -117,7 +135,7 @@ gen_parts = ak.zip(
         key : gen_tree[field]
         for key, field in cfg.gen_variables.items()
     },
-    m = 0.1 * ak.ones_like(gen_tree[f"partPt"]),
+    m = cfg.muon_mass * ak.ones_like(gen_tree[f"partPt"]),
     ), 
     with_name="Momentum4D"
 )
@@ -127,7 +145,7 @@ l1_parts = ak.zip(
         key : l1_tree[field]
         for key, field in cfg.l1_variables.items()
     },
-    m = 0.1 * ak.ones_like(l1_tree[f"{cfg.branch}Pt"]),
+    m = cfg.muon_mass * ak.ones_like(l1_tree[f"{cfg.branch}Pt"]),
     ), 
     with_name="Momentum4D"
 )
@@ -159,14 +177,24 @@ fill_th1(histos.gen_dimuon_m, gen_dimuon.m)
 n_gen_barrel_muons = ak.sum( abs(gen_muons.eta) < cfg.barrel_eta, axis=1)
 n_gen_overlap_muons = ak.sum( (abs(gen_muons.eta) > cfg.barrel_eta) & (abs(gen_muons.eta) < cfg.endcap_eta), axis=1)
 n_gen_endcap_muons = ak.sum( abs(gen_muons.eta) > cfg.endcap_eta, axis=1)
+n_gen_center_endcap_muons = ak.sum( (abs(gen_muons.eta) > cfg.endcap_eta) & (abs(gen_muons.eta) < cfg.eta_max), axis=1)
+n_gen_forward_endcap_muons = ak.sum( (abs(gen_muons.eta) > cfg.endcap_eta) & (abs(gen_muons.eta) > cfg.eta_max), axis=1)
 
 fill_th1(histos.gen_bb_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 2)])
 fill_th1(histos.gen_bo_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_overlap_muons == 1)])
 fill_th1(histos.gen_be_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_endcap_muons == 1)])
+# fill_th1(histos.gen_bc_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_center_endcap_muons == 1)])
+# fill_th1(histos.gen_bf_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_forward_endcap_muons == 1)])
 
 fill_th1(histos.gen_oo_dimuon_m, gen_dimuon.m[(n_gen_overlap_muons == 2)])
 fill_th1(histos.gen_oe_dimuon_m, gen_dimuon.m[(n_gen_overlap_muons == 1) & (n_gen_endcap_muons == 1)])
+# fill_th1(histos.gen_oc_dimuon_m, gen_dimuon.m[(n_gen_overlap_muons == 1) & (n_gen_center_endcap_muons == 1)])
+# fill_th1(histos.gen_of_dimuon_m, gen_dimuon.m[(n_gen_overlap_muons == 1) & (n_gen_forward_endcap_muons == 1)])
+
 fill_th1(histos.gen_ee_dimuon_m, gen_dimuon.m[(n_gen_endcap_muons == 2)])
+# fill_th1(histos.gen_cc_dimuon_m, gen_dimuon.m[(n_gen_center_endcap_muons == 2)])
+# fill_th1(histos.gen_cf_dimuon_m, gen_dimuon.m[(n_gen_center_endcap_muons == 1) & (n_gen_forward_endcap_muons == 1)])
+# fill_th1(histos.gen_ff_dimuon_m, gen_dimuon.m[(n_gen_forward_endcap_muons == 2)])
 
 ##############################
 # Fill Gen particle values
@@ -199,20 +227,41 @@ if getattr(cfg, 'l1_selection', None):
 print (" ... Filling L1 Particles")
 
 l1 = l1_parts
+if cfg.unscale_l1_muon_pt:
+    l1 = ak.zip(
+        dict(
+            pt=unscale_l1_muon_pt(l1, barrel_eta=cfg.barrel_eta, endcap_eta=cfg.endcap_eta),
+            eta=l1.eta,
+            phi=l1.phi,
+            m=l1.m
+        ),
+        with_name="Momentum4D"
+    )
+
 l1_dimuon, l1_dimuon_mask = pair_leading_parts(l1, return_mask=True)
 l1_muons = l1_parts[l1_dimuon_mask][:,:2]
 
 n_l1_barrel_muons = ak.sum( abs(l1_muons.eta) < cfg.barrel_eta, axis=1)
 n_l1_overlap_muons = ak.sum( (abs(l1_muons.eta) > cfg.barrel_eta) & (abs(l1_muons.eta) < cfg.endcap_eta), axis=1)
 n_l1_endcap_muons = ak.sum( abs(l1_muons.eta) > cfg.endcap_eta, axis=1)
+n_l1_center_endcap_muons = ak.sum( (abs(l1_muons.eta) > cfg.endcap_eta) & (abs(l1_muons.eta) < cfg.eta_max), axis=1)
+n_l1_forward_endcap_muons = ak.sum( (abs(l1_muons.eta) > cfg.endcap_eta) & (abs(l1_muons.eta) > cfg.eta_max), axis=1)
 
 fill_th1(histos.l1_bb_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 2)])
 fill_th1(histos.l1_bo_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_overlap_muons == 1)])
 fill_th1(histos.l1_be_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_endcap_muons == 1)])
+# fill_th1(histos.l1_bc_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_center_endcap_muons == 1)])
+# fill_th1(histos.l1_bf_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_forward_endcap_muons == 1)])
 
 fill_th1(histos.l1_oo_dimuon_m, l1_dimuon.m[(n_l1_overlap_muons == 2)])
 fill_th1(histos.l1_oe_dimuon_m, l1_dimuon.m[(n_l1_overlap_muons == 1) & (n_l1_endcap_muons == 1)])
+# fill_th1(histos.l1_oc_dimuon_m, l1_dimuon.m[(n_l1_overlap_muons == 1) & (n_l1_center_endcap_muons == 1)])
+# fill_th1(histos.l1_of_dimuon_m, l1_dimuon.m[(n_l1_overlap_muons == 1) & (n_l1_forward_endcap_muons == 1)])
+
 fill_th1(histos.l1_ee_dimuon_m, l1_dimuon.m[(n_l1_endcap_muons == 2)])
+# fill_th1(histos.l1_cc_dimuon_m, l1_dimuon.m[(n_l1_center_endcap_muons == 2)])
+# fill_th1(histos.l1_cf_dimuon_m, l1_dimuon.m[(n_l1_center_endcap_muons == 1) & (n_l1_forward_endcap_muons == 1)])
+# fill_th1(histos.l1_ff_dimuon_m, l1_dimuon.m[(n_l1_forward_endcap_muons == 2)])
 
 fill_th1(histos.l1pt, l1.pt)
 fill_th1(histos.l1eta, l1.eta)

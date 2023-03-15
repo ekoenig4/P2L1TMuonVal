@@ -14,9 +14,13 @@ argparse:
     barrel_eta: 0.83
     endcap_eta: 1.24
 
+    unscale_l1_muon_pt: False
+
     total: -1
 
 # matched_delta_r: 0.1
+
+muon_mass: 0.1
 
 gen_variables:
     pt: "partPt"
@@ -28,7 +32,7 @@ gen_variables:
 gen_selection:
     stat: "lambda t : t.partStat == 1"
     ptcut: "lambda t : (t.partPt > {pt_min})"
-    
+    etacut: "lambda t : (abs(t.partEta) < {eta_max})"
 
 l1_variables:
     pt: "{branch}Pt"
@@ -40,4 +44,5 @@ l1_variables:
 
 l1_selection:
     ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
+    etacut: "lambda t : (abs(t.{branch}Eta) < {eta_max})"
     # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"
