@@ -40,42 +40,69 @@ class Config:
         return cls(**cfg, cfgfile=cfgfile)
 
     def __init__(self, **cfg):
+        keys = list()
+
         parser_kwargs = cfg.pop('argparse', None)
+
+        self._parser = ArgumentParser()
+        self._parser.add_argument('--yaml', action='store_true', default=False, help='Print out initialized yaml', dest='_print_yaml')
         if parser_kwargs:
-            self._parser = ArgumentParser()
 
             for key, value in parser_kwargs.items():
+                keys.append(key)
+
                 opt = key.replace('_', '-')
-                value_type = type(value)
-                nargs = None 
 
-                if isinstance(value, list):
-                    nargs = '+'
-                    value_type = type(value[0])
+                opt_kwargs = dict(
+                    default=value,
+                    type=type(value),
+                    help=f'Default = {value}'
+                )
 
-                self._parser.add_argument(f'--{opt}', default=value, nargs=nargs,
-                                         type=value_type, help=f'Default = {value}')
+                if opt_kwargs['type'] is dict:
+                    opt_kwargs.update(value, type=type(value['default']))
+
+                if opt_kwargs['type'] is list:
+                    opt_kwargs.update(
+                        type=type(opt_kwargs['default']),
+                        nargs='+'
+                    )
+
+                self._parser.add_argument(f'--{opt}', **opt_kwargs)
+
+            keys += list(cfg.keys())
+
             cfg.update(
                 **parser_kwargs
             )
 
-        self.__dict__.update(**cfg)
+        self.__dict__.update(**cfg, _keys=keys)
 
     @property
     def namespace(self):
-        return { key:value for key, value in self.__dict__.items() if not key.startswith('_') }
+        return { key:getattr(self, key) for key in self._keys }
 
     @property
     def yaml(self):
         args = self.namespace
-        return yaml.dump(args)
+        return yaml.dump(args, sort_keys=False)
+
+    def init(self, *args, **kwargs):
+        self.parse_args(*args, **kwargs)
+        self.replace()
+
+        if self._print_yaml:
+            print(self.yaml)
+
+        return self
+
 
     def parse_args(self, *args, **kwargs):
         if not hasattr(self, '_parser'):
             print(f'No arguments to parse in {self.cfgpath}')
             return self
 
-        args = self._parser.parse_args(*args, **kwargs)
+        args, unk = self._parser.parse_known_args(*args, **kwargs)
         self.__dict__.update(**vars(args))
         return self
 

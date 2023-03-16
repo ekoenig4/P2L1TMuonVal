@@ -1,9 +1,13 @@
 argparse:
     label: "simple"
+    eosurl: root://cmseos.fnal.gov/
 
-    file: "L1NtuplePhaseII_Step1"
-    filepath: "/eos/uscms/store/user/ekoenig/trigger/"
-    outfile: "effi_{file}_{branch}_{label}.root"
+    files: 
+        default: input/DYToLL_M-50_TuneCP5_14TeV-pythia8.txt
+        help: path to files or text file containing files
+        nargs: +
+
+    outfile: "effi_{branch}_{label}.root"
 
     branch: "gmtTkMuon"
     eta_min: 0   
@@ -39,6 +43,6 @@ l1_variables:
     # nstubs: "{branch}NStubs"
 
 l1_selection:
-    ptcut: "lambda t : (t.{branch}Pt > {pt_min}))"
+    ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
     etacut: "lambda t : (abs(t.{branch}Eta) > {eta_min}) & (abs(t.{branch}Eta) < {eta_max})"
     # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"

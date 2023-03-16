@@ -8,6 +8,7 @@ from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo2d
 from L1Trigger.Phase2L1GMTNtuples.awkward_tools import cumand
 from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_leading_parts
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
+from L1Trigger.Phase2L1GMTNtuples.glob_tools import get_filelist
 from ROOT import *
 from collections import defaultdict
 import math, sys, git, os, tqdm, numpy as np, uproot as ut, awkward as ak, vector
@@ -15,17 +16,15 @@ vector.register_awkward()
 TH1.GetDefaultSumw2()
 
 
-cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/effi_gmt_tk_muon.yaml')
-cfg.parse_args() # read all avaiable argparse variables from command line if given
-cfg.replace() # replace all {} variables in config where available
+cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/effi_gmt_tk_muon.yaml').init()
 
 cfg.pt_range = (cfg.pt_min, cfg.pt_max)
 cfg.eta_range = (cfg.eta_min, cfg.eta_max)
 
 
-filename = os.path.join(cfg.filepath,f'{cfg.file}.root')
-gen_tree = ut.lazy( f"{filename}:genTree/L1GenTree" )
-l1_tree = ut.lazy( f"{filename}:gmtTkMuonChecksTree/L1PhaseIITree" )
+filelist = get_filelist(cfg.files)
+gen_tree = ut.lazy( [f"{f}:genTree/L1GenTree" for f in filelist] )
+l1_tree = ut.lazy( [f"{f}:gmtTkMuonChecksTree/L1PhaseIITree" for f in filelist] )
 
 gen_entries = len(gen_tree)
 l1_entries = len(l1_tree)
@@ -38,7 +37,8 @@ entries = gen_entries
 TH1.GetDefaultSumw2()
 
 print("=========================================================")
-print("Computing L1 Match Efficiencies from %s" % filename)
+print("Computing L1 Match Efficiencies from %i file(s)" % (len(filelist)))
+print("\n".join(f" ... {f}" for f in filelist))
 print("Total Events: %d" % entries)
 print("Pt Range: %.0f - %.0f" % tuple(cfg.pt_range))
 print("Eta Range: %.1f - %.1f" % tuple(cfg.eta_range))
@@ -157,10 +157,14 @@ if cfg.total > 0:
     l1_tree = l1_tree[:cfg.total]
 
 gen_parts = ak.zip(
+    dict(
     {
         key : gen_tree[field]
         for key, field in cfg.gen_variables.items()
-    }, with_name="Momentum4D"
+    },
+    m = 0.1 * ak.ones_like(gen_tree[f"partPt"]),
+    ), 
+    with_name="Momentum4D"
 )
 
 l1_parts = ak.zip(

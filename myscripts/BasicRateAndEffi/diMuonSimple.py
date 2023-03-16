@@ -1,49 +1,34 @@
-###############################################################
-###############################################################
-
-
 #!/usr/bin/env python3
-from typing import Any
-from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo2d, fill_th1, fill_th2
-from L1Trigger.Phase2L1GMTNtuples.awkward_tools import cumand
-from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_leading_parts
+###############################################################
+# python3 myscripts/BasicRateAndEffi/dimuonSimple.py --help
+###############################################################
+
+
+import os
+
+import awkward as ak
+import numpy as np
+import uproot as ut
+import vector
+from L1Trigger.Phase2L1GMTNtuples.hep_tools import pair_leading_parts
+from L1Trigger.Phase2L1GMTNtuples.root_tools import (fill_th1, fill_th2,
+                                                     format_histo,
+                                                     format_histo2d)
 from L1Trigger.Phase2L1GMTNtuples.scaling_tools import unscale_l1_muon_pt
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
+from L1Trigger.Phase2L1GMTNtuples.glob_tools import get_filelist
 from ROOT import *
-from collections import defaultdict
-import math, sys, git, os, tqdm, numpy as np, uproot as ut, awkward as ak, vector
+
 vector.register_awkward()
 TH1.GetDefaultSumw2()
 
 
-cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/di_gmt_muon.yaml')
-cfg.parse_args() # read all avaiable argparse variables from command line if given
-cfg.replace() # replace all {} variables in config where available
+cfg = Config.from_file(f'{os.path.dirname(__file__)}/config/di_gmt_muon.yaml').init()
 
 cfg.pt_range = (cfg.pt_min, cfg.pt_max)
 cfg.eta_range = (cfg.eta_min, cfg.eta_max)
 
-
-filename = os.path.join(cfg.filepath,f'{cfg.file}.root')
-gen_tree = ut.lazy( f"{filename}:genTree/L1GenTree" )
-l1_tree = ut.lazy( f"{filename}:gmtTkMuonChecksTree/L1PhaseIITree" )
-
-gen_entries = len(gen_tree)
-l1_entries = len(l1_tree)
-
-if l1_entries != gen_entries:
-    raise ValueError()
-
-entries = gen_entries
-
-TH1.GetDefaultSumw2()
-
-print("=========================================================")
-print("Computing L1/Gen DiMuon Distributions from %s" % filename)
-print("Total Events: %d" % entries)
-print("Pt Range: %.0f - %.0f" % tuple(cfg.pt_range))
-print("Eta Range: %.1f - %.1f" % tuple(cfg.eta_range))
-print("=========================================================")
+filelist = get_filelist(cfg.files)
 
 class namespace:
     def __init__(self, **kwargs):
@@ -57,6 +42,32 @@ class namespace:
     def values(self): return ( getattr(self, key) for key in self._keys )
     def items(self):
         return ( (key, getattr(self, key)) for key in self._keys )
+
+
+gen_config = namespace(**cfg.gen_tree)
+gen_tree = ut.lazy( [f"{f}:{gen_config.tree}" for f in filelist] )
+
+l1_config = namespace(**cfg.l1_tree)
+l1_tree = ut.lazy( [f"{f}:{l1_config.tree}" for f in filelist] )
+
+gen_entries = len(gen_tree)
+l1_entries = len(l1_tree)
+
+if l1_entries != gen_entries:
+    raise ValueError()
+
+entries = gen_entries
+
+TH1.GetDefaultSumw2()
+
+print("=========================================================")
+print("Computing L1/Gen DiMuon Distributions from %i file(s)" % (len(filelist)))
+print("\n".join(f" ... {f}" for f in filelist))
+print("Total Events: %d" % entries)
+print("Pt Range: %.0f - %.0f" % tuple(cfg.pt_range))
+print("Eta Range: %.1f - %.1f" % tuple(cfg.eta_range))
+print("=========================================================")
+
 
 def format_pt_histo(name, title, bins=20, lo=0, hi=100, **kwargs):
     return format_histo(name, title, bins, lo, hi, **kwargs)
@@ -133,7 +144,7 @@ if cfg.total > 0:
 gen_parts = ak.zip(
     dict({
         key : gen_tree[field]
-        for key, field in cfg.gen_variables.items()
+        for key, field in gen_config.variables.items()
     },
     m = cfg.muon_mass * ak.ones_like(gen_tree[f"partPt"]),
     ), 
@@ -143,7 +154,7 @@ gen_parts = ak.zip(
 l1_parts = ak.zip(
     dict({
         key : l1_tree[field]
-        for key, field in cfg.l1_variables.items()
+        for key, field in l1_config.variables.items()
     },
     m = cfg.muon_mass * ak.ones_like(l1_tree[f"{cfg.branch}Pt"]),
     ), 
@@ -156,7 +167,7 @@ print (" ... Masking Gen Particles")
 
 gen_muon_mask = np.abs(gen_tree.partId) == 13
 if getattr(cfg, 'gen_selection', None):
-    for key, selection in cfg.gen_selection.items():
+    for key, selection in gen_config.selection.items():
         print(f' ... ... applying {selection}')
         gen_muon_mask = gen_muon_mask & eval(selection)(gen_tree) 
 
@@ -215,7 +226,7 @@ print (" ... Masking L1 Particles")
 
 l1_muon_mask = l1_parts.pt > 0
 if getattr(cfg, 'l1_selection', None):
-    for key, selection in cfg.l1_selection.items():
+    for key, selection in l1_config.selection.items():
         print(f' ... ... applying {selection}')
         l1_muon_mask = l1_muon_mask & eval(selection)(l1_tree) 
 

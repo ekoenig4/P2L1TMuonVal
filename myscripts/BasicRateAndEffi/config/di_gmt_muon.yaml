@@ -1,48 +1,51 @@
 argparse:
     label: "simple"
+    eosurl: root://cmseos.fnal.gov/
 
-    file: "L1NtuplePhaseII_Step1"
-    filepath: "/eos/uscms/store/user/ekoenig/trigger/"
-    outfile: "dimuon_{file}_{branch}_{label}.root"
+    files: 
+        default: input/DYToLL_M-50_TuneCP5_14TeV-pythia8.txt
+        help: path to files or text file containing files
+        nargs: +
+
+    outfile: "dimuon_{branch}_{label}.root"
 
     branch: "gmtTkMuon"
-    eta_min: 0
-    eta_max: 2.4
+    eta_min: 0 # abs_eta minimum
+    eta_max: 2.4 # abs_eta maximum
     pt_min: 5.
     pt_max: 100.
 
     barrel_eta: 0.83
     endcap_eta: 1.24
 
-    unscale_l1_muon_pt: False
+    unscale_l1_muon_pt: True
 
     total: -1
 
 # matched_delta_r: 0.1
-
 muon_mass: 0.1
 
-gen_variables:
-    pt: "partPt"
-    eta: "partEta"
-    phi: "partPhi"
-    # E: "partE"
-    # charge: "partCh"
+gen_tree:
+    tree: genTree/L1GenTree
 
-gen_selection:
-    stat: "lambda t : t.partStat == 1"
-    ptcut: "lambda t : (t.partPt > {pt_min})"
-    etacut: "lambda t : (abs(t.partEta) < {eta_max})"
+    variables:
+        pt: "partPt"
+        eta: "partEta"
+        phi: "partPhi"
 
-l1_variables:
-    pt: "{branch}Pt"
-    eta: "{branch}Eta"
-    phi: "{branch}Phi"
-    # E: "{branch}E"
-    # charge: "{branch}Chg"
-    # nstubs: "{branch}NStubs"
+    selection:
+        stat: "lambda t : t.partStat == 1"
+        ptcut: "lambda t : (t.partPt > {pt_min})"
+        etacut: "lambda t : (abs(t.partEta) < {eta_max})"
+    
+l1_tree: 
+    tree: gmtTkMuonChecksTree/L1PhaseIITree
 
-l1_selection:
-    ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
-    etacut: "lambda t : (abs(t.{branch}Eta) < {eta_max})"
-    # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"
+    variables:
+        pt: "{branch}Pt"
+        eta: "{branch}Eta"
+        phi: "{branch}Phi"
+
+    selection:
+        ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
+        etacut: "lambda t : (abs(t.{branch}Eta) < {eta_max})"
