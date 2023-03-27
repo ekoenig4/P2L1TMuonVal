@@ -16,7 +16,7 @@ def glob(filepath, url=default_url):
     filelist = local_glob(filepath)
     if any(filelist):
         return filelist
-
+    
     filelist = store_glob(filepath, url)
     return filelist
 
@@ -27,7 +27,7 @@ def get_filelist(files, url=default_url):
         if filepath.endswith('.txt'):
             with open(filepath, 'r') as f:
                 for _file in f.readlines():
-                    filelist += glob(_file, url)
+                    filelist += [_file.strip()]
         else:
             filelist += glob(filepath, url)
 

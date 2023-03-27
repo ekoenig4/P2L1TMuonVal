@@ -2,6 +2,7 @@ import ROOT
 import awkward as ak
 import numpy as np
 import os 
+from array import array
 
 def save_canvas(canvas, fname, fmt=['png']):
     dirname = os.path.dirname(fname)
@@ -19,6 +20,22 @@ def tset(tobj, **attrs):
         if not isinstance(value, (tuple, list)): value = [value]
         setter(*value)
     return tobj
+
+
+    
+def format_histo_varbin(name, title, bins, color=ROOT.kBlack, **set_attrs):
+    if isinstance(bins, tuple):
+        histo = ROOT.TH1F(name, title, *bins)
+    elif isinstance(bins, np.ndarray):
+        bins = array('d', bins)
+        histo = ROOT.TH1F(name, title, len(bins)-1, bins)
+
+    histo.SetLineColor(color)
+    histo.SetMarkerColor(color)
+    histo.SetMarkerStyle(20)
+    histo.Sumw2()
+
+    return tset(histo, **set_attrs)
     
 def format_histo(name, title, bins, start, end, color=ROOT.kBlack, **set_attrs):
     histo = ROOT.TH1F(name, title, bins, start, end)
