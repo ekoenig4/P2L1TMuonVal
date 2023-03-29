@@ -1,3 +1,12 @@
+# Study Framework
+Once installed this module can be called from any python package in CMSSW with 
+```python
+from L1Trigger.Phase2L1GMTNtuples import tools
+```
+
+some slides with examples of the utility of the framework can be found [doc/20230327_L1_Muon_DPG.pdf](doc/20230327_L1_Muon_DPG.pdf)
+
+
 # P2L1TMuonVal
 
 This repository will contain an example tree and python analysis code to perform P2 L1TMuon checks for gmtMuons (with and without tracks) 
@@ -16,7 +25,7 @@ git cms-init
 git cms-merge-topic -u cms-l1t-offline:l1t-phase2-v3.4.53
 
 cd L1Trigger
-git clone https://github.com/mcepeda/P2L1TMuonVal Phase2L1GMTNtuples  
+git clone https://github.com/ekoenig4/P2L1TMuonVal Phase2L1GMTNtuples  
 
 scram b -j 8
 ```
