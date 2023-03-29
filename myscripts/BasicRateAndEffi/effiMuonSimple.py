@@ -4,7 +4,7 @@
 
 #!/usr/bin/env python3
 from typing import Any
-from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo2d, fill_th1, fill_th2
+from L1Trigger.Phase2L1GMTNtuples.root_tools import format_histo, format_histo_varbin, format_histo2d, fill_th1, fill_th2
 from L1Trigger.Phase2L1GMTNtuples.awkward_tools import cumand
 from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr, pair_leading_parts
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
@@ -22,9 +22,12 @@ cfg.pt_range = (cfg.pt_min, cfg.pt_max)
 cfg.eta_range = (cfg.eta_min, cfg.eta_max)
 
 
-filelist = get_filelist(cfg.files)
-gen_tree = ut.lazy( [f"{f}:genTree/L1GenTree" for f in filelist] )
-l1_tree = ut.lazy( [f"{f}:gmtTkMuonChecksTree/L1PhaseIITree" for f in filelist] )
+print(f'Loading filelist: {cfg.files}')
+filelist = get_filelist(cfg.files, cfg.eosurl)
+
+print(f'Loading Trees with {len(filelist)} files')
+gen_tree = ut.lazy( [f"{f}:genTree/L1GenTree" for f in filelist], allow_missing=True )
+l1_tree = ut.lazy( [f"{f}:gmtTkMuonChecksTree/L1PhaseIITree" for f in filelist], allow_missing=True )
 
 gen_entries = len(gen_tree)
 l1_entries = len(l1_tree)
@@ -57,8 +60,14 @@ class namespace:
     def items(self):
         return ( (key, getattr(self, key)) for key in self._keys )
 
-def format_pt_histo(name, title, bins=20, lo=0, hi=100, **kwargs):
-    return format_histo(name, title, bins, lo, hi, **kwargs)
+def format_pt_histo(name, title, **kwargs):
+    bins = np.concatenate([
+        np.arange(0,15,0.5),
+        np.arange(15,30,1),
+        np.arange(30,50,5),
+        np.arange(50,100+10,10),
+    ])
+    return format_histo_varbin(name, title, bins, **kwargs)
 def format_eta_histo(name, title, bins=50, lo=-2.5, hi=2.5, **kwargs):
     return format_histo(name, title, bins, lo, hi, **kwargs)
 def format_phi_histo(name, title, bins=100, lo=-4, hi=4, **kwargs):

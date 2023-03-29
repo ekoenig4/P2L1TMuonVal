@@ -45,4 +45,5 @@ l1_variables:
 l1_selection:
     ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
     etacut: "lambda t : (abs(t.{branch}Eta) > {eta_min}) & (abs(t.{branch}Eta) < {eta_max})"
+    qualcut: "lambda t : t.{branch}Qual > 0"
     # nstubs>=2: "lambda t : t.{branch}NStubs >= 2"

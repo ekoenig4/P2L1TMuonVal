@@ -43,6 +43,7 @@ class Config:
         keys = list()
 
         parser_kwargs = cfg.pop('argparse', None)
+        keys += list(cfg.keys())
 
         self._parser = ArgumentParser()
         self._parser.add_argument('--yaml', action='store_true', default=False, help='Print out initialized yaml', dest='_print_yaml')
@@ -70,7 +71,6 @@ class Config:
 
                 self._parser.add_argument(f'--{opt}', **opt_kwargs)
 
-            keys += list(cfg.keys())
 
             cfg.update(
                 **parser_kwargs
