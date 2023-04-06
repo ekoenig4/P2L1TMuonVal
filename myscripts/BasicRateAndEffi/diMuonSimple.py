@@ -166,7 +166,7 @@ l1_parts = ak.zip(
 print (" ... Masking Gen Particles")
 
 gen_muon_mask = np.abs(gen_tree.partId) == 13
-if getattr(cfg, 'gen_selection', None):
+if getattr(gen_config, 'selection', None):
     for key, selection in gen_config.selection.items():
         print(f' ... ... applying {selection}')
         gen_muon_mask = gen_muon_mask & eval(selection)(gen_tree) 
@@ -185,11 +185,11 @@ gen_muons = gen_parts[gen_dimuon_mask][:,:2]
 
 fill_th1(histos.gen_dimuon_m, gen_dimuon.m)
 
-n_gen_barrel_muons = ak.sum( abs(gen_muons.eta) < cfg.barrel_eta, axis=1)
-n_gen_overlap_muons = ak.sum( (abs(gen_muons.eta) > cfg.barrel_eta) & (abs(gen_muons.eta) < cfg.endcap_eta), axis=1)
-n_gen_endcap_muons = ak.sum( abs(gen_muons.eta) > cfg.endcap_eta, axis=1)
-n_gen_center_endcap_muons = ak.sum( (abs(gen_muons.eta) > cfg.endcap_eta) & (abs(gen_muons.eta) < cfg.eta_max), axis=1)
-n_gen_forward_endcap_muons = ak.sum( (abs(gen_muons.eta) > cfg.endcap_eta) & (abs(gen_muons.eta) > cfg.eta_max), axis=1)
+n_gen_barrel_muons = ak.sum( np.abs(gen_muons.eta) < cfg.barrel_eta, axis=1)
+n_gen_overlap_muons = ak.sum( (np.abs(gen_muons.eta) > cfg.barrel_eta) & (np.abs(gen_muons.eta) < cfg.endcap_eta), axis=1)
+n_gen_endcap_muons = ak.sum( np.abs(gen_muons.eta) > cfg.endcap_eta, axis=1)
+n_gen_center_endcap_muons = ak.sum( (np.abs(gen_muons.eta) > cfg.endcap_eta) & (np.abs(gen_muons.eta) < cfg.eta_max), axis=1)
+n_gen_forward_endcap_muons = ak.sum( (np.abs(gen_muons.eta) > cfg.endcap_eta) & (np.abs(gen_muons.eta) > cfg.eta_max), axis=1)
 
 fill_th1(histos.gen_bb_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 2)])
 fill_th1(histos.gen_bo_dimuon_m, gen_dimuon.m[(n_gen_barrel_muons == 1) & (n_gen_overlap_muons == 1)])
@@ -225,7 +225,7 @@ fill_th2(histos.gen_2dpteta, gen_parts.pt, gen_parts.eta)
 print (" ... Masking L1 Particles")
 
 l1_muon_mask = l1_parts.pt > 0
-if getattr(cfg, 'l1_selection', None):
+if getattr(l1_config, 'selection', None):
     for key, selection in l1_config.selection.items():
         print(f' ... ... applying {selection}')
         l1_muon_mask = l1_muon_mask & eval(selection)(l1_tree) 
@@ -241,7 +241,7 @@ l1 = l1_parts
 if cfg.unscale_l1_muon_pt:
     l1 = ak.zip(
         dict(
-            pt=unscale_l1_muon_pt(l1, barrel_eta=cfg.barrel_eta, endcap_eta=cfg.endcap_eta),
+            pt=unscale_l1_muon_pt(l1, barrel_eta=cfg.barrel_eta, endcap_eta=cfg.endcap_eta, lutversion=cfg.lutversion),
             eta=l1.eta,
             phi=l1.phi,
             m=l1.m
@@ -250,13 +250,13 @@ if cfg.unscale_l1_muon_pt:
     )
 
 l1_dimuon, l1_dimuon_mask = pair_leading_parts(l1, return_mask=True)
-l1_muons = l1_parts[l1_dimuon_mask][:,:2]
+l1_muons = l1[l1_dimuon_mask][:,:2]
 
-n_l1_barrel_muons = ak.sum( abs(l1_muons.eta) < cfg.barrel_eta, axis=1)
-n_l1_overlap_muons = ak.sum( (abs(l1_muons.eta) > cfg.barrel_eta) & (abs(l1_muons.eta) < cfg.endcap_eta), axis=1)
-n_l1_endcap_muons = ak.sum( abs(l1_muons.eta) > cfg.endcap_eta, axis=1)
-n_l1_center_endcap_muons = ak.sum( (abs(l1_muons.eta) > cfg.endcap_eta) & (abs(l1_muons.eta) < cfg.eta_max), axis=1)
-n_l1_forward_endcap_muons = ak.sum( (abs(l1_muons.eta) > cfg.endcap_eta) & (abs(l1_muons.eta) > cfg.eta_max), axis=1)
+n_l1_barrel_muons = ak.sum( np.abs(l1_muons.eta) < cfg.barrel_eta, axis=1)
+n_l1_overlap_muons = ak.sum( (np.abs(l1_muons.eta) > cfg.barrel_eta) & (np.abs(l1_muons.eta) < cfg.endcap_eta), axis=1)
+n_l1_endcap_muons = ak.sum( np.abs(l1_muons.eta) > cfg.endcap_eta, axis=1)
+n_l1_center_endcap_muons = ak.sum( (np.abs(l1_muons.eta) > cfg.endcap_eta) & (np.abs(l1_muons.eta) < cfg.eta_max), axis=1)
+n_l1_forward_endcap_muons = ak.sum( (np.abs(l1_muons.eta) > cfg.endcap_eta) & (np.abs(l1_muons.eta) > cfg.eta_max), axis=1)
 
 fill_th1(histos.l1_bb_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 2)])
 fill_th1(histos.l1_bo_dimuon_m, l1_dimuon.m[(n_l1_barrel_muons == 1) & (n_l1_overlap_muons == 1)])

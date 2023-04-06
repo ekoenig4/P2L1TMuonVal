@@ -1,6 +1,6 @@
 import awkward as ak
 
-def unscale_l1_muon_pt(l1_muons, barrel_eta=0.83, endcap_eta=1.24):
+def unscale_l1_muon_pt(l1_muons, barrel_eta=0.83, endcap_eta=1.24, lutversion=8):
     """Unscale L1 Muon Pt 
 
     Args:
@@ -38,8 +38,20 @@ def unscale_l1_muon_pt(l1_muons, barrel_eta=0.83, endcap_eta=1.24):
     l1_muon_in_endcap = abs(l1_muons.eta) > endcap_eta
 
     # pt sf 
-    l1_muon_unscaled_emtf_pt_sf = 1 / (1.13 + 0.015 * l1_muons.pt)
-    l1_muon_unscaled_emtf_pt_sf_floor = (1 - 0.015 * 20) / 1.13 # minimum scaling for pt
+    if lutversion >= 8:
+        print('[NOTE] Applying endcap unscaling for ptLUTVersion >= 8')
+        ###########
+        # (ptLUTVersion_ >= 8) {  // First "physics" LUTs for 2022, will be deployed in June 2022
+        l1_muon_unscaled_emtf_pt_sf = 1 / (1.13 + 0.015 * l1_muons.pt)
+        l1_muon_unscaled_emtf_pt_sf_floor = (1 - 0.015 * 20) / 1.13 # minimum scaling for pt
+
+    elif lutversion >= 6:
+        print('[NOTE] Applying endcap unscaling for ptLUTVersion >= 6')
+        ###########
+        # (ptLUTVersion_ >= 6) {  // First "physics" LUTs for 2017, deployed June 7
+        l1_muon_unscaled_emtf_pt_sf = 1 / (1.2 + 0.015 * l1_muons.pt)
+        l1_muon_unscaled_emtf_pt_sf_floor = (1 - 0.015 * 20) / 1.2 # minimum scaling for pt
+
 
     # set the unscaled pt sf to the minimum value
     l1_muon_unscaled_emtf_pt_sf = ak.where( l1_muon_unscaled_emtf_pt_sf > l1_muon_unscaled_emtf_pt_sf_floor, l1_muon_unscaled_emtf_pt_sf, l1_muon_unscaled_emtf_pt_sf_floor )

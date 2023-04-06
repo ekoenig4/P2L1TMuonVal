@@ -15,15 +15,16 @@ argparse:
     pt_min: 5.
     pt_max: 100.
 
-    barrel_eta: 0.83
-    endcap_eta: 1.24
 
-    unscale_l1_muon_pt: True
+    unscale_l1_muon_pt: False
+    lutversion: 8
 
     total: -1
 
 # matched_delta_r: 0.1
 muon_mass: 0.1
+barrel_eta: 0.83
+endcap_eta: 1.24
 
 gen_tree:
     tree: genTree/L1GenTree
@@ -36,7 +37,7 @@ gen_tree:
     selection:
         stat: "lambda t : t.partStat == 1"
         ptcut: "lambda t : (t.partPt > {pt_min})"
-        etacut: "lambda t : (abs(t.partEta) < {eta_max})"
+        etacut: "lambda t : (np.abs(t.partEta) < {eta_max})"
     
 l1_tree: 
     tree: gmtTkMuonChecksTree/L1PhaseIITree
@@ -48,6 +49,6 @@ l1_tree:
 
     selection:
         ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
-        etacut: "lambda t : (abs(t.{branch}Eta) < {eta_max})"
+        etacut: "lambda t : (np.abs(t.{branch}Eta) < {eta_max})"
 
         
