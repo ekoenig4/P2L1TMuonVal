@@ -10,7 +10,7 @@ import awkward as ak
 import numpy as np
 import uproot as ut
 import vector
-from L1Trigger.Phase2L1GMTNtuples.hep_tools import pair_leading_parts
+from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr,pair_leading_parts
 from L1Trigger.Phase2L1GMTNtuples.root_tools import (fill_th1, fill_th2,
                                                      format_histo,
                                                      format_histo2d)
@@ -232,12 +232,26 @@ if getattr(l1_config, 'selection', None):
 
     l1_parts = l1_parts[l1_muon_mask]
 
+
+##############################
+# Find nearest L1 particle in delta R to Gen particle
+##############################
+print (" ... Matching Gen Particles")
+
+l1_delta_r = get_dr(gen_parts.eta, gen_parts.phi, l1_parts.eta[:,None], l1_parts.phi[:,None])
+matched_delta_r, matched_l1_index = ak.min(l1_delta_r, axis=2), ak.argmin(l1_delta_r, axis=2)
+# fill_th1(histos.bestdr, matched_delta_r)
+
+print (" ... Matched Gen Particles")
+matched_mask = matched_delta_r < cfg.matched_delta_r
+matched_mask = ak.fill_none(matched_mask, False)
+
 ##############################
 # Fill matched Gen/L1 particle values
 ##############################
 print (" ... Filling L1 Particles")
 
-l1 = l1_parts
+l1 = l1_parts[matched_l1_index][matched_mask]
 if cfg.unscale_l1_muon_pt:
     l1 = ak.zip(
         dict(

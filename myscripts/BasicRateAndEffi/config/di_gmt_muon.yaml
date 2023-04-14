@@ -10,7 +10,7 @@ argparse:
     outfile: "dimuon_{branch}_{label}.root"
 
     branch: "gmtTkMuon"
-    eta_min: 0 # abs_eta minimum
+    eta_min: 0.0 # abs_eta minimum
     eta_max: 2.4 # abs_eta maximum
     pt_min: 5.
     pt_max: 100.
@@ -21,7 +21,7 @@ argparse:
 
     total: -1
 
-# matched_delta_r: 0.1
+matched_delta_r: 0.1
 muon_mass: 0.1
 barrel_eta: 0.83
 endcap_eta: 1.24
@@ -37,7 +37,7 @@ gen_tree:
     selection:
         stat: "lambda t : t.partStat == 1"
         ptcut: "lambda t : (t.partPt > {pt_min})"
-        etacut: "lambda t : (np.abs(t.partEta) < {eta_max})"
+        etacut: "lambda t : (np.abs(t.partEta) < {eta_max}) & (np.abs(t.partEta) > {eta_min})"
     
 l1_tree: 
     tree: gmtTkMuonChecksTree/L1PhaseIITree
@@ -49,6 +49,6 @@ l1_tree:
 
     selection:
         ptcut: "lambda t : (t.{branch}Pt > {pt_min})"
-        etacut: "lambda t : (np.abs(t.{branch}Eta) < {eta_max})"
+        etacut: "lambda t : (np.abs(t.{branch}Eta) < {eta_max}) & (np.abs(t.{branch}Eta) > {eta_min})"
 
         

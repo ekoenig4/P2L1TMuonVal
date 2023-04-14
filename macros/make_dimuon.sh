@@ -18,8 +18,14 @@ dy50=input/DYToLL_M-50_TuneCP5_14TeV-pythia8.txt
 # python3 $SCRIPT --file $dy10 --branch gmtSaMuon --label DYToLL_M-10To50 $@
 # python3 $SCRIPT --file $dy50 --branch gmtSaMuon --label DYToLL_M-50 $@
 
+python3 $SCRIPT --file $dy10 --branch gmtSaMuon --label DYToLL_M-10To50_eta1p2-1p6 --eta-min 1.2 --eta-max 1.6 $@ 
+python3 $SCRIPT --file $dy50 --branch gmtSaMuon --label DYToLL_M-50_eta1p2-1p6 --eta-min 1.2 --eta-max 1.6 $@
+
 # python3 $SCRIPT --file $dy10 --branch gmtSaMuon --label DYToLL_M-10To50_unscaled --unscale-l1-muon-pt True $@ 
 # python3 $SCRIPT --file $dy50 --branch gmtSaMuon --label DYToLL_M-50_unscaled --unscale-l1-muon-pt True $@
 
-python3 $SCRIPT --file $dy10 --branch gmtSaMuon --label DYToLL_M-10To50_lut6_unscaled --unscale-l1-muon-pt True --lutversion 6$@ 
-python3 $SCRIPT --file $dy50 --branch gmtSaMuon --label DYToLL_M-50_lut6_unscaled --unscale-l1-muon-pt True --lutversion 6 $@
+python3 $SCRIPT --file $dy10 --branch gmtSaMuon --label DYToLL_M-10To50_unscaled_eta1p2-1p6 --eta-min 1.2 --eta-max 1.6 --unscale-l1-muon-pt True $@ 
+python3 $SCRIPT --file $dy50 --branch gmtSaMuon --label DYToLL_M-50_unscaled_eta1p2-1p6 --eta-min 1.2 --eta-max 1.6 --unscale-l1-muon-pt True $@
+
+# python3 $SCRIPT --file $dy10 --branch gmtSaMuon --label DYToLL_M-10To50_lut6_unscaled --unscale-l1-muon-pt True --lutversion 6$@ 
+# python3 $SCRIPT --file $dy50 --branch gmtSaMuon --label DYToLL_M-50_lut6_unscaled --unscale-l1-muon-pt True --lutversion 6 $@
