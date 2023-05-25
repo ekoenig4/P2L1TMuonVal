@@ -14,7 +14,7 @@ from L1Trigger.Phase2L1GMTNtuples.hep_tools import get_dr,pair_leading_parts
 from L1Trigger.Phase2L1GMTNtuples.root_tools import (fill_th1, fill_th2,
                                                      format_histo,
                                                      format_histo2d)
-from L1Trigger.Phase2L1GMTNtuples.scaling_tools import unscale_l1_muon_pt
+from L1Trigger.Phase2L1GMTNtuples.scaling_tools import unscale_l1_muon_pt, menu_scaling_l1_muon_pt
 from L1Trigger.Phase2L1GMTNtuples.yaml_cfg import Config
 from L1Trigger.Phase2L1GMTNtuples.glob_tools import get_filelist
 from ROOT import *
@@ -252,15 +252,26 @@ matched_mask = ak.fill_none(matched_mask, False)
 print (" ... Filling L1 Particles")
 
 l1 = l1_parts[matched_l1_index][matched_mask]
+
+l1_muon_pt = l1.pt
 if cfg.unscale_l1_muon_pt:
+    print("Applying unscaling")
+    l1_muon_pt = unscale_l1_muon_pt(l1_muon_pt, l1.eta, barrel_eta=cfg.barrel_eta, endcap_eta=cfg.endcap_eta, lutversion=cfg.lutversion)
+
+if cfg.menu_l1_muon_pt:
+    print("Applying menu scaling")
+    l1_muon_pt = menu_scaling_l1_muon_pt(l1_muon_pt, l1.eta, barrel_eta=cfg.barrel_eta, endcap_eta=cfg.endcap_eta)
+
+if cfg.unscale_l1_muon_pt or cfg.menu_l1_muon_pt:
     l1 = ak.zip(
         dict(
-            pt=unscale_l1_muon_pt(l1, barrel_eta=cfg.barrel_eta, endcap_eta=cfg.endcap_eta, lutversion=cfg.lutversion),
+            pt=l1_muon_pt,
             eta=l1.eta,
             phi=l1.phi,
             m=l1.m
         ),
-        with_name="Momentum4D"
+        with_name="Momentum4D",
+        depth_limit=1,
     )
 
 l1_dimuon, l1_dimuon_mask = pair_leading_parts(l1, return_mask=True)

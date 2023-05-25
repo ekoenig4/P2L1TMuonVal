@@ -17,6 +17,7 @@ argparse:
 
 
     unscale_l1_muon_pt: False
+    menu_l1_muon_pt: False
     lutversion: 8
 
     total: -1

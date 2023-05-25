@@ -1,6 +1,8 @@
 import awkward as ak
 import numpy as np
 
+from .awkward_tools import array_p4
+
 def get_dphi(phi_1, phi_2):
     dphi = phi_2 - phi_1
     dphi = ak.where( dphi >= np.pi, dphi - 2.0*np.pi, dphi)
@@ -29,7 +31,7 @@ def pair_leading_parts(parts, return_mask=False):
     has_two_parts = ak.count(parts.pt, axis=1) >= 2
     selected_parts = parts[has_two_parts]
     leading_part, subleading_part = selected_parts[:,0], selected_parts[:,1]
-    dipart = leading_part + subleading_part
+    dipart = array_p4(leading_part) + array_p4(subleading_part)
     if return_mask:
         return dipart, has_two_parts
     return dipart

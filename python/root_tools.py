@@ -8,6 +8,11 @@ def save_canvas(canvas, fname, fmt=['png']):
     dirname = os.path.dirname(fname)
     if not os.path.exists(dirname):
         os.mkdir(dirname)
+
+    if len(fname.split('.')) == 2:
+        fname, ext = fname.split('.')
+        fmt = [ext]
+
     for _fmt in fmt:
         canvas.SaveAs(f"{fname}.{_fmt}")
 
