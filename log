@@ -1,0 +1,3 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1685046985.922	    47.140	0	5888	0	0	python3 myscripts/BasicRateAndEffi/diMuonSimple.py --file input/DYToLL_M-10To50_TuneCP5_14TeV-pythia8.txt --branch gmtSaMuon --label DYToLL_M-10To50_menu --menu-l1-muon-pt True
+2	:	1685046985.923	    97.065	0	1960	0	0	python3 myscripts/BasicRateAndEffi/diMuonSimple.py --file input/DYToLL_M-50_TuneCP5_14TeV-pythia8.txt --branch gmtSaMuon --label DYToLL_M-50_menu --menu-l1-muon-pt True

@@ -1,5 +1,5 @@
-/store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_1.root
-/store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_2.root
-/store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_3.root
-/store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_4.root
-/store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_5.root
+root://cmseos.fnal.gov//store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_1.root
+root://cmseos.fnal.gov//store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_2.root
+root://cmseos.fnal.gov//store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_3.root
+root://cmseos.fnal.gov//store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_4.root
+root://cmseos.fnal.gov//store/user/ekoenig/trigger/NTuples/Phase2/DYToLL_M-50_TuneCP5_14TeV-pythia8/ekoenig_Muon_Phase2_DYToll_M-50/230222_142205/0000/L1NtuplePhaseII_Step1_5.root
